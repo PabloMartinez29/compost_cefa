@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dashboard del Administrador - Estilos personalizados */
+@layer components {
+    .dashboard-header {
+        @apply bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500;
+    }
+    
+    .welcome-title {
+        @apply text-2xl font-bold text-gray-800 mb-2;
+    }
+    
+    .welcome-subtitle {
+        @apply text-gray-600 text-lg;
+    }
+    
+    .stats-card {
+        @apply bg-white rounded-lg shadow-sm p-6 border-l-4 transition-all duration-300 hover:shadow-md hover:transform hover:-translate-y-1;
+    }
+    
+    .stats-card-primary {
+        @apply border-green-500;
+    }
+    
+    .stats-card-success {
+        @apply border-green-500;
+    }
+    
+    .stats-card-info {
+        @apply border-green-500;
+    }
+    
+    .stats-card-warning {
+        @apply border-green-500;
+    }
+    
+    .stats-card-orange {
+        @apply border-green-500;
+    }
+    
+    .stats-number {
+        @apply text-3xl font-bold text-gray-800;
+    }
+    
+    .stats-label {
+        @apply text-sm font-medium text-gray-600 uppercase tracking-wide;
+    }
+    
+    .stats-icon {
+        @apply text-2xl text-green-600;
+    }
+    
+    .quick-actions {
+        @apply bg-white rounded-lg shadow-sm p-6;
+    }
+    
+    .action-btn {
+        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+    }
+    
+    .action-btn-secondary {
+        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+    }
+    
+    .action-btn-info {
+        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+    }
+    
+    .action-btn-warning {
+        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+    }
+    
+    .action-btn-orange {
+        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+    }
+    
+    .section-title {
+        @apply text-xl font-bold text-gray-800 mb-4 flex items-center;
+    }
+    
+    .section-icon {
+        @apply mr-2 text-green-600;
+    }
+    
+    .info-card {
+        @apply bg-white rounded-lg shadow-sm p-6 border border-gray-200;
+    }
+    
+    .info-item {
+        @apply flex items-center py-2 border-b border-gray-100 last:border-b-0;
+    }
+    
+    .info-icon {
+        @apply w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm bg-green-100 text-green-600;
+    }
+    
+    .info-text {
+        @apply flex-1;
+    }
+    
+    .info-title {
+        @apply font-medium text-gray-800;
+    }
+    
+    .info-subtitle {
+        @apply text-sm text-gray-600;
+    }
+    
+    .info-time {
+        @apply text-xs text-gray-500;
+    }
+}
+
+/* Animaciones personalizadas */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-delay-1 {
+    animation-delay: 0.1s;
+}
+
+.animate-delay-2 {
+    animation-delay: 0.2s;
+}
+
+.animate-delay-3 {
+    animation-delay: 0.3s;
+}
+
+.animate-delay-4 {
+    animation-delay: 0.4s;
+}

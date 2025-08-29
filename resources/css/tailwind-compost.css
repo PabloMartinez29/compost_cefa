@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Componentes personalizados para el tema de compostaje */
+@layer components {
+    /* Sidebar personalizado */
+    .sidebar-compost {
+        @apply bg-gradient-to-b from-compost-600 to-compost-500;
+    }
+    
+    .sidebar-compost .nav-link {
+        @apply text-white hover:bg-white/10 hover:text-white transition-colors duration-200;
+    }
+    
+    .sidebar-compost .nav-link.active {
+        @apply bg-white text-compost-600;
+    }
+    
+    .sidebar-compost .nav-treeview .nav-link {
+        @apply text-white bg-white/5 hover:bg-white/15;
+    }
+    
+    /* Navbar personalizado */
+    .navbar-compost {
+        @apply bg-white border-b-2 border-compost-500;
+    }
+    
+    .navbar-compost .nav-link {
+        @apply text-compost-600 hover:text-compost-500;
+    }
+    
+    /* Dropdown personalizado */
+    .dropdown-compost .dropdown-menu {
+        @apply border border-compost-500 shadow-lg;
+    }
+    
+    .dropdown-compost .dropdown-item:hover {
+        @apply bg-compost-500 text-white;
+    }
+    
+    /* Logo y branding */
+    .brand-compost {
+        @apply bg-compost-600 text-white text-center font-bold text-lg;
+    }
+    
+    .brand-compost:hover {
+        @apply text-white;
+    }
+    
+    /* Botón de cerrar sesión */
+    .logout-link {
+        @apply text-red-600 hover:text-red-700 hover:bg-red-50;
+    }
+    
+    /* Content wrapper */
+    .content-compost {
+        @apply bg-gray-50;
+    }
+    
+    /* Iconos del sidebar */
+    .nav-icon-compost {
+        @apply w-5 h-5 mr-3;
+    }
+    
+    /* Hover effects mejorados */
+    .nav-item-compost {
+        @apply transition-all duration-200 ease-in-out;
+    }
+    
+    .nav-item-compost:hover {
+        @apply transform translate-x-1;
+    }
+}
