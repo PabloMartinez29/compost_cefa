@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('composting', function (Blueprint $table) {
+        Schema::create('machineries', function (Blueprint $table) {
             $table->id();
-            $table->integer('pile_num');
-            $table->date('start_date');
-            $table->date('end_date')->nullable();
-            $table->decimal('total_kg', 10, 2);
-            $table->decimal('efficiency', 5, 2);
+            $table->string('name', 150);
+            $table->string('location', 150);
+            $table->string('brand', 100);
+            $table->string('model', 100);
+            $table->string('serial', 100);
+            $table->date('start_func');
+            $table->string('maint_freq', 100);
             $table->timestamps();
         });
 
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('composting');
+        Schema::dropIfExists('machineries');
     }
 };

@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('usage_control', function (Blueprint $table) {
+        Schema::create('Reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('machinery_id')->constrained('machinery')->onDelete('cascade');
+            $table->enum('module', ['organics','compostings','trackings','fertilizers','machineries','usage_Controls']);
+            $table->unsignedBigInteger('ref_id');
             $table->date('date');
-            $table->date('start_date');
-            $table->date('end_date');
-            $table->integer('hours');
-            $table->string('responsible', 150);
             $table->text('description')->nullable();
             $table->timestamps();
         });
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('usage_control');
+        Schema::dropIfExists('reports');
     }
 };

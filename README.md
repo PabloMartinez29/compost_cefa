@@ -1,61 +1,248 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🌱 Sistema de Compostaje CEFA
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema web para la gestión del proceso de compostaje en el CEFA, desarrollado con Laravel y Tailwind CSS.
 
-## About Laravel
+## 📋 Requisitos Previos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **PHP** 8.2 o superior
+- **Composer** (gestor de dependencias de PHP)
+- **Node.js** 18 o superior
+- **npm** (incluido con Node.js)
+- **MySQL** o **MariaDB**
+- **Git**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Instalación Paso a Paso
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 1. Clonar el Repositorio
 
-## Learning Laravel
+```Terminal
+git clone <URL_DEL_REPOSITORIO>
+cd compost_cefa
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 2. Instalar Dependencias de PHP
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```Terminal
+composer install
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 3. Configurar Variables de Entorno
 
-## Laravel Sponsors
+```Terminal
+# Copiar el archivo de configuración
+cp .env.example .env
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Generar clave de aplicación
+php artisan key:generate
+```
 
-### Premium Partners
+### 4. Configurar Base de Datos
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Edita el archivo `.env` con tu configuración de base de datos:
 
-## Contributing
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=compost_cefa
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 5. Crear la Base de Datos
 
-## Code of Conduct
+Crea una base de datos MySQL llamada `compost` (o el nombre que prefieras).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 6. Ejecutar Migraciones
 
-## Security Vulnerabilities
+```terminal
+php artisan migrate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 7. Ejecutar Seeders (Datos Iniciales)
 
-## License
+```Terminal
+php artisan db:seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 8. Instalar Dependencias de Node.js
+
+```Terminal
+npm install
+```
+
+### 9. Compilar Assets de Vite
+
+```Terminal
+npm run build
+```
+
+### 10. Configurar Almacenamiento
+
+```Terminal
+php artisan storage:link
+```
+
+### 11. Configurar Permisos (Solo Linux/Mac)
+
+```Terminal
+chmod -R 775 storage bootstrap/cache
+```
+
+## 👤 Crear Usuario Administrador
+
+### Opción 1: Usando Tinker
+
+```Terminal
+php artisan tinker
+```
+
+En Tinker, ejecuta:
+
+$user = new App\Models\User(); 
+$user->name = "Administrador"; 
+$user->email = "admin@test.com"; 
+$user->password = bcrypt("123456"); 
+$user->role = "admin"; 
+$user->save(); 
+
+
+## 🏃‍♂️ Ejecutar el Proyecto
+
+### Opción 1: Servidor de Desarrollo de Laravel
+
+```Terminal
+php artisan serve
+```
+
+Accede a: `http://localhost:8000`
+
+### Opción 2: Usando Laragon (Recomendado para Windows)
+
+1. Coloca el proyecto en la carpeta `www` de Laragon
+2. Inicia Laragon
+3. Accede a: `http://compost_cefa.test`
+
+## 🔐 Credenciales de Acceso
+
+### Administrador
+- **Email:** admin@cefa.com
+- **Contraseña:** password123
+
+### Aprendiz (crear manualmente)
+- **Email:** aprendiz@cefa.com
+- **Contraseña:** password123
+
+## 📁 Estructura del Proyecto
+
+```
+compost_cefa/
+├── app/                    # Lógica de la aplicación
+├── config/                 # Archivos de configuración
+├── database/               # Migraciones y seeders
+├── public/                 # Archivos públicos
+├── resources/              # Vistas, CSS, JS
+│   ├── css/               # Archivos CSS
+│   ├── js/                # Archivos JavaScript
+│   └── views/             # Vistas Blade
+├── routes/                 # Definición de rutas
+└── storage/                # Archivos de almacenamiento
+```
+
+## 🎨 Características del Sistema
+
+### Dashboard de Administrador
+- Gestión de pasantes
+- Control de pilas de compostaje
+- Gestión de maquinaria
+- Reportes y estadísticas
+- Control de residuos orgánicos
+
+### Dashboard de Aprendiz
+- Visualización de tareas asignadas
+- Registro de horas de práctica
+- Seguimiento de progreso
+- Gestión de pilas asignadas
+
+## 🛠️ Comandos Útiles
+
+### Desarrollo
+```Terminal
+npm run dev          # Modo desarrollo con hot reload
+npm run build        # Compilar assets para producción
+php artisan serve    # Iniciar servidor de desarrollo
+```
+
+### Base de Datos
+```Terminal
+php artisan migrate              # Ejecutar migraciones
+php artisan migrate:rollback     # Revertir última migración
+php artisan migrate:fresh        # Recrear base de datos
+php artisan db:seed              # Ejecutar seeders
+```
+
+### Caché
+```Terminal
+php artisan cache:clear          # Limpiar caché
+php artisan config:clear         # Limpiar caché de configuración
+php artisan view:clear           # Limpiar caché de vistas
+```
+
+### Tinker
+```Terminal
+php artisan tinker               # Abrir consola interactiva
+```
+
+## 🐛 Solución de Problemas
+
+### Error: ViteManifestNotFoundException
+```Terminal
+npm run build
+```
+
+### Error: Permisos en Linux/Mac
+```Terminal
+chmod -R 775 storage bootstrap/cache
+```
+
+### Error: Base de Datos
+```Terminal
+php artisan migrate:fresh --seed
+```
+
+### Error: Composer
+```Terminal
+composer dump-autoload
+```
+
+## 📝 Notas Importantes
+
+- **Zona Horaria:** El sistema está configurado para Colombia (America/Bogota)
+- **Assets:** Siempre ejecuta `npm run build` después de cambios en CSS/JS
+- **Base de Datos:** Asegúrate de tener MySQL/MariaDB instalado y funcionando
+- **Puertos:** El servidor por defecto usa el puerto 8000
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📞 Soporte
+
+Si tienes problemas durante la instalación:
+
+1. Verifica que todos los requisitos estén instalados
+2. Revisa los logs de error
+3. Asegúrate de que la base de datos esté configurada correctamente
+4. Ejecuta `composer install` y `npm install` nuevamente
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+---
+
+**Desarrollado para el CEFA** 🌱

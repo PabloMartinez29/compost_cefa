@@ -11,19 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('fertilizer', function (Blueprint $table) {
+       Schema::create('Ingredients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('composting_id')->constrained('composting')->onDelete('cascade');
-            $table->date('date');
-            $table->time('time');
-            $table->string('requester', 150);
-            $table->string('destination', 150);
-            $table->string('received_by', 150);
-            $table->string('delivered_by', 150);
-            $table->enum('type', ["Liquid","Solid"]);
+            $table->unsignedBigInteger('composting_id');
+            $table->unsignedBigInteger('organic_id');
             $table->decimal('amount', 10, 2);
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            $table->foreign('composting_id')->references('id')->on('compostings')->onDelete('cascade');
+            $table->foreign('organic_id')->references('id')->on('organics')->onDelete('cascade');
         });
 
     }
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fertilizer');
+        Schema::dropIfExists('ingredients');
     }
 };

@@ -5,7 +5,7 @@
 /* Dashboard del Administrador - Estilos personalizados */
 @layer components {
     .dashboard-header {
-        @apply bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500;
+        @apply bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-300;
     }
     
     .welcome-title {
@@ -21,23 +21,23 @@
     }
     
     .stats-card-primary {
-        @apply border-green-500;
+        @apply border-blue-200;
     }
     
     .stats-card-success {
-        @apply border-green-500;
+        @apply border-green-200;
     }
     
     .stats-card-info {
-        @apply border-green-500;
+        @apply border-cyan-200;
     }
     
     .stats-card-warning {
-        @apply border-green-500;
+        @apply border-yellow-200;
     }
     
     .stats-card-orange {
-        @apply border-green-500;
+        @apply border-orange-200;
     }
     
     .stats-number {
@@ -49,7 +49,27 @@
     }
     
     .stats-icon {
-        @apply text-2xl text-green-600;
+        @apply text-2xl;
+    }
+    
+    .stats-card-primary .stats-icon {
+        @apply text-blue-300;
+    }
+    
+    .stats-card-success .stats-icon {
+        @apply text-green-300;
+    }
+    
+    .stats-card-info .stats-icon {
+        @apply text-cyan-300;
+    }
+    
+    .stats-card-warning .stats-icon {
+        @apply text-yellow-300;
+    }
+    
+    .stats-card-orange .stats-icon {
+        @apply text-orange-300;
     }
     
     .quick-actions {
@@ -57,23 +77,23 @@
     }
     
     .action-btn {
-        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+        @apply w-full bg-green-200 hover:bg-green-300 text-green-800 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
     }
     
     .action-btn-secondary {
-        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+        @apply w-full bg-blue-200 hover:bg-blue-300 text-blue-800 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
     }
     
     .action-btn-info {
-        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+        @apply w-full bg-cyan-200 hover:bg-cyan-300 text-cyan-800 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
     }
     
     .action-btn-warning {
-        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+        @apply w-full bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
     }
     
     .action-btn-orange {
-        @apply w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
+        @apply w-full bg-orange-200 hover:bg-orange-300 text-orange-800 font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:transform hover:-translate-y-1 flex items-center justify-center;
     }
     
     .section-title {
@@ -81,7 +101,7 @@
     }
     
     .section-icon {
-        @apply mr-2 text-green-600;
+        @apply mr-2 text-green-400;
     }
     
     .info-card {
@@ -93,7 +113,27 @@
     }
     
     .info-icon {
-        @apply w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm bg-green-100 text-green-600;
+        @apply w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm;
+    }
+    
+    .info-item:nth-child(1) .info-icon {
+        @apply bg-green-100 text-green-400;
+    }
+    
+    .info-item:nth-child(2) .info-icon {
+        @apply bg-blue-100 text-blue-400;
+    }
+    
+    .info-item:nth-child(3) .info-icon {
+        @apply bg-yellow-100 text-yellow-400;
+    }
+    
+    .info-item:nth-child(4) .info-icon {
+        @apply bg-orange-100 text-orange-400;
+    }
+    
+    .info-item:nth-child(5) .info-icon {
+        @apply bg-purple-100 text-purple-400;
     }
     
     .info-text {

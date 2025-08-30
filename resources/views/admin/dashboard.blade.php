@@ -17,7 +17,7 @@
                 </p>
             </div>
             <div class="text-right">
-                <div class="text-green-600 font-bold text-lg">{{ now()->format('d/m/Y') }}</div>    
+                <div class="text-green-600 font-bold text-lg">{{ \Carbon\Carbon::now()->setTimezone('America/Bogota')->format('d/m/Y') }}</div>    
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@
                     <div class="stats-label">Total Pasantes</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-blue-300">
                     <i class="fas fa-users"></i>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                     <div class="stats-label">Pilas Activas</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-green-300">
                     <i class="fas fa-mountain"></i>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                     <div class="stats-label">Residuos (Kg)</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-cyan-300">
                     <i class="fas fa-leaf"></i>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     <div class="stats-label">Maquinaria</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-orange-300">
                     <i class="fas fa-cogs"></i>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                     <div class="stats-label">Abono (Kg)</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-yellow-300">
                     <i class="fas fa-seedling"></i>
                 </div>
             </div>
@@ -109,7 +109,7 @@
                     </div>
                 </div>
                 <div class="info-item">
-                    <div class="info-icon">
+                    <div class="info-icon bg-blue-100 text-blue-400">
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="info-text">
@@ -118,7 +118,7 @@
                     </div>
                 </div>
                 <div class="info-item">
-                    <div class="info-icon">
+                    <div class="info-icon bg-yellow-100 text-yellow-400">
                         <i class="fas fa-leaf"></i>
                     </div>
                     <div class="info-text">
@@ -127,7 +127,7 @@
                     </div>
                 </div>
                 <div class="info-item">
-                    <div class="info-icon">
+                    <div class="info-icon bg-orange-100 text-orange-400">
                         <i class="fas fa-cogs"></i>
                     </div>
                     <div class="info-text">
@@ -136,7 +136,7 @@
                     </div>
                 </div>
                 <div class="info-item">
-                    <div class="info-icon">
+                    <div class="info-icon bg-purple-100 text-purple-400">
                         <i class="fas fa-chart-line"></i>
                     </div>
                     <div class="info-text">
@@ -180,9 +180,9 @@
 
     <!-- Mensaje de Bienvenida -->
     <div class="mt-8 animate-fade-in-up animate-delay-4">
-        <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-8 border border-green-200">
+        <div class="bg-gradient-to-r from-blue-50 via-green-50 to-cyan-50 rounded-lg p-8 border border-green-200">
             <div class="text-center">
-                <i class="fas fa-seedling text-4xl text-green-600 mb-4"></i>
+                <i class="fas fa-seedling text-4xl text-green-400 mb-4"></i>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">
                     ¡Bienvenido al Sistema de Compostaje!
                 </h3>
@@ -191,11 +191,11 @@
                     Registra pasantes, crea pilas de compostaje, gestiona maquinaria y monitorea el progreso.
                 </p>
                 <div class="flex justify-center space-x-4">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
                         <i class="fas fa-check-circle mr-1"></i>
                         Sistema Operativo
                     </span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                         <i class="fas fa-clock mr-1"></i>
                         Listo para Usar
                     </span>

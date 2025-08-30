@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tracking', function (Blueprint $table) {
+        Schema::create('trackings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('composting_id')->constrained('composting')->onDelete('cascade');
+            $table->unsignedBigInteger('composting_id');
             $table->integer('day');
             $table->date('date');
             $table->text('activity');
@@ -28,6 +28,8 @@ return new class extends Migration
             $table->decimal('lime', 10, 2);
             $table->text('others')->nullable();
             $table->timestamps();
+
+            $table->foreign('composting_id')->references('id')->on('compostings')->onDelete('cascade');
         });
 
     }
@@ -37,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tracking');
+        Schema::dropIfExists('trackings');
     }
 };

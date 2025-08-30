@@ -12,12 +12,12 @@
                     Bienvenido Aprendiz
                 </h1>
                 <p class="welcome-subtitle">
-                    <i class="fas fa-user-graduate text-green-600 mr-2"></i>
+                    <i class="fas fa-user text-green-600 mr-2"></i>
                     {{ Auth::user()->name }} - Panel de Aprendiz del Sistema de Compostaje
                 </p>
             </div>
             <div class="text-right">
-                <div class="text-green-600 font-bold text-lg">{{ now()->format('d/m/Y') }}</div>    
+                <div class="text-green-600 font-bold text-lg">{{ \Carbon\Carbon::now()->setTimezone('America/Bogota')->format('d/m/Y') }}</div>    
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@
                     <div class="stats-label">Mis Actividades</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-blue-300">
                     <i class="fas fa-tasks"></i>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                     <div class="stats-label">Pilas Asignadas</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-green-300">
                     <i class="fas fa-mountain"></i>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                     <div class="stats-label">Horas de Práctica</div>
                     <div class="stats-number">0</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-cyan-300">
                     <i class="fas fa-clock"></i>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                     <div class="stats-label">Progreso</div>
                     <div class="stats-number">0%</div>
                 </div>
-                <div class="stats-icon">
+                <div class="stats-icon text-yellow-300">
                     <i class="fas fa-chart-line"></i>
                 </div>
             </div>
@@ -125,9 +125,9 @@
 
     <!-- Mensaje de Bienvenida -->
     <div class="mt-8 animate-fade-in-up animate-delay-4">
-        <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-8 border border-green-200">
+        <div class="bg-gradient-to-r from-blue-50 via-green-50 to-cyan-50 rounded-lg p-8 border border-green-200">
             <div class="text-center">
-                <i class="fas fa-user-graduate text-4xl text-green-600 mb-4"></i>
+                <i class="fas fa-user text-4xl text-green-400 mb-4"></i>
                 <h3 class="text-xl font-bold text-gray-800 mb-2">
                     ¡Bienvenido al Sistema de Aprendizaje!
                 </h3>
@@ -136,11 +136,11 @@
                     Completa tus tareas asignadas, registra tus horas de práctica y sigue tu progreso.
                 </p>
                 <div class="flex justify-center space-x-4">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
                         <i class="fas fa-check-circle mr-1"></i>
                         Listo para Aprender
                     </span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                         <i class="fas fa-clock mr-1"></i>
                         En Espera de Tareas
                     </span>

@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('organic', function (Blueprint $table) {
+      Schema::create('organics', function (Blueprint $table) {
             $table->id();
             $table->date('date');
             $table->enum('type', ["Kitchen","Beds","Leaves","CowDung","ChickenManure","PigManure","Other"]);
-            $table->string('img')->nullable(); // Ruta de la imagen
             $table->decimal('weight', 10, 2);
             $table->text('notes')->nullable();
             $table->string('delivered_by', 100);
             $table->string('received_by', 100);
+            $table->string('img')->nullable(); // Imagen
             $table->timestamps();
         });
 
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organic');
+        Schema::dropIfExists('organics');
     }
 };

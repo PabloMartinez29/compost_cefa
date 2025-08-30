@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-       Schema::create('maintenance', function (Blueprint $table) {
+       Schema::create('compostings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('machinery_id')->constrained('machinery')->onDelete('cascade');
-            $table->date('date');
-            $table->enum('type', ['O','M']); // O = Ordinary, M = Major
-            $table->text('description');
-            $table->string('responsible', 150);
+            $table->integer('pile_num');
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->decimal('total_kg', 10, 2);
+            $table->decimal('efficiency', 5, 2)->nullable();
             $table->timestamps();
         });
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('maintenance');
+        Schema::dropIfExists('compostings');
     }
 };

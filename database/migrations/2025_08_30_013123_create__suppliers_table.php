@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('supplier', function (Blueprint $table) {
+        Schema::create('Suppliers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('machinery_id')->constrained('machinery')->onDelete('cascade');
+            $table->unsignedBigInteger('machinery_id');
             $table->string('maker', 150);
             $table->string('origin', 150);
             $table->date('purchase_date');
@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('phone', 50);
             $table->string('email', 150);
             $table->timestamps();
+
+            $table->foreign('machinery_id')->references('id')->on('machineries')->onDelete('cascade');
         });
 
     }
@@ -30,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('supplier');
+        Schema::dropIfExists('suppliers');
     }
 };
