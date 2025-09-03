@@ -14,9 +14,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -63,6 +60,39 @@
         .content-transition { transition: all 0.3s ease-in-out; }
         .hover-lift { transition: transform 0.2s ease-in-out; }
         .hover-lift:hover { transform: translateY(-2px); }
+        
+        /* Animaciones para el submenú */
+        .submenu-container {
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .submenu-hidden {
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .submenu-visible {
+            max-height: 200px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .submenu-item {
+            transition: all 0.2s ease-in-out;
+            transform: translateX(-10px);
+            opacity: 0;
+        }
+        
+        .submenu-item.animate-in {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .arrow-transition {
+            transition: transform 0.3s ease-in-out;
+        }
     </style>
 </head>
 
@@ -123,10 +153,30 @@
                     </a>
                     
                     <!-- Abono -->
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
-                        <i class="fas fa-seedling w-5 text-center group-hover:text-soft-green-600"></i>
-                        <span class="font-medium">Abono</span>
-                    </a>
+                    <div class="relative">
+                        <button onclick="toggleSubmenu('abonoSubmenu', 'abonoArrow')" 
+                            class="w-full flex items-center justify-between px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-seedling w-5 text-center group-hover:text-soft-green-600"></i>
+                                <span class="font-medium">Abono</span>
+                            </div>
+                            <i id="abonoArrow" class="fas fa-chevron-down text-soft-gray-400 text-xs arrow-transition"></i>
+                        </button>
+
+                        <!-- Submenú con animaciones -->
+                        <div id="abonoSubmenu" class="submenu-container submenu-hidden ml-10 mt-2 space-y-2">
+                            <a href="{{ route('admin.create') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-edit w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Registro</span>
+                            </a>
+                            <a href="" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-list w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Listas</span>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </nav>
         </div>
@@ -139,63 +189,55 @@
                     <h2 class="text-xl font-semibold text-soft-gray-800">Panel de Administración</h2>
                 </div>
                 
-                                            <!-- User Menu -->
-                            <div class="flex items-center space-x-4">
-                                <div class="relative" x-data="{ open: false }">
-                                    <button @click="open = !open" class="flex items-center space-x-3 hover:bg-soft-gray-100 rounded-lg px-3 py-2 transition-all duration-200">
-                                        <div class="w-8 h-8 bg-gradient-to-br from-soft-green-500 to-soft-green-600 rounded-full flex items-center justify-center">
-                                            <i class="fas fa-user text-white text-sm"></i>
-                                        </div>
-                                        <div class="text-right">
-                                            <p class="text-sm font-medium text-soft-gray-800">{{ Auth::user()->name }}</p>
-                                            <p class="text-xs text-soft-gray-500">Administrador</p>
-                                        </div>
-                                        <i class="fas fa-chevron-down text-soft-gray-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                                    </button>
-                                    
-                                    <!-- Dropdown Menu -->
-                                    <div x-show="open" 
-                                         @click.away="open = false"
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 scale-95"
-                                         x-transition:enter-end="opacity-100 scale-100"
-                                         x-transition:leave="transition ease-in duration-150"
-                                         x-transition:leave-start="opacity-100 scale-100"
-                                         x-transition:leave-end="opacity-0 scale-95"
-                                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-soft-gray-200 py-2 z-50">
-                                        
-                                        <!-- User Info -->
-                                        <div class="px-4 py-2 border-b border-soft-gray-100">
-                                            <p class="text-sm font-medium text-soft-gray-800">{{ Auth::user()->name }}</p>
-                                            <p class="text-xs text-soft-gray-500">{{ Auth::user()->email }}</p>
-                                        </div>
-                                        
-                                        <!-- Menu Items -->
-                                        <div class="py-1">
-                                            <a href="#" class="flex items-center px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50 transition-colors duration-200">
-                                                <i class="fas fa-user-cog w-4 text-soft-gray-400 mr-3"></i>
-                                                Perfil
-                                            </a>
-                                            <a href="{{ url('/') }}" class="flex items-center px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50 transition-colors duration-200">
-                                                <i class="fas fa-home w-4 text-soft-gray-400 mr-3"></i>
-                                                Welcome
-                                            </a>
-                                        </div>
-                                        
-                                        <!-- Divider -->
-                                        <div class="border-t border-soft-gray-100 my-1"></div>
-                                        
-                                        <!-- Logout -->
-                                        <form method="POST" action="{{ route('logout') }}" class="block">
-                                            @csrf
-                                            <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
-                                                <i class="fas fa-sign-out-alt w-4 mr-3"></i>
-                                                Cerrar Sesión
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
+                <!-- User Menu -->
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button onclick="toggleSubmenu('userMenu', 'userArrow')" 
+                            class="flex items-center space-x-3 hover:bg-soft-gray-100 rounded-lg px-3 py-2 transition-all duration-200">
+                            <div class="w-8 h-8 bg-gradient-to-br from-soft-green-500 to-soft-green-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
                             </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-soft-gray-800">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-soft-gray-500">Administrador</p>
+                            </div>
+                            <i id="userArrow" class="fas fa-chevron-down text-soft-gray-400 text-xs transition-transform duration-200"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-soft-gray-200 py-2 z-50">
+                            <!-- User Info -->
+                            <div class="px-4 py-2 border-b border-soft-gray-100">
+                                <p class="text-sm font-medium text-soft-gray-800">{{ Auth::user()->name }}</p>
+                                <p class="text-xs text-soft-gray-500">{{ Auth::user()->email }}</p>
+                            </div>
+                            
+                            <!-- Menu Items -->
+                            <div class="py-1">
+                                <a href="#" class="flex items-center px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50 transition-colors duration-200">
+                                    <i class="fas fa-user-cog w-4 text-soft-gray-400 mr-3"></i>
+                                    Perfil
+                                </a>
+                                <a href="{{ url('/') }}" class="flex items-center px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50 transition-colors duration-200">
+                                    <i class="fas fa-home w-4 text-soft-gray-400 mr-3"></i>
+                                    Welcome
+                                </a>
+                            </div>
+                            
+                            <!-- Divider -->
+                            <div class="border-t border-soft-gray-100 my-1"></div>
+                            
+                            <!-- Logout -->
+                            <form method="POST" action="{{ route('logout') }}" class="block">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
+                                    <i class="fas fa-sign-out-alt w-4 mr-3"></i>
+                                    Cerrar Sesión
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </header>
             
             <!-- Page Content -->
@@ -204,5 +246,46 @@
             </main>
         </div>                              
     </div>
+
+    <script>
+        function toggleSubmenu(id, arrowId) {
+            const submenu = document.getElementById(id);
+            const arrow = document.getElementById(arrowId);
+
+            // Para el menú de Abono con animaciones
+            if (id === 'abonoSubmenu') {
+                const isHidden = submenu.classList.contains('submenu-hidden');
+                const submenuItems = submenu.querySelectorAll('.submenu-item');
+                
+                if (isHidden) {
+                    // Mostrar el submenú
+                    submenu.classList.remove('submenu-hidden');
+                    submenu.classList.add('submenu-visible');
+                    arrow.classList.add('rotate-180');
+                    
+                    // Animar cada elemento del submenú con delay
+                    submenuItems.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.classList.add('animate-in');
+                        }, index * 100); // 100ms de delay entre cada elemento
+                    });
+                } else {
+                    // Ocultar el submenú
+                    submenu.classList.remove('submenu-visible');
+                    submenu.classList.add('submenu-hidden');
+                    arrow.classList.remove('rotate-180');
+                    
+                    // Remover las animaciones
+                    submenuItems.forEach(item => {
+                        item.classList.remove('animate-in');
+                    });
+                }
+            } else {
+                // Para otros menús (como el menú de usuario)
+                submenu.classList.toggle('hidden');
+                arrow.classList.toggle('rotate-180');
+            }
+        }
+    </script>
 </body>
 </html>

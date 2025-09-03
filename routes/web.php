@@ -7,6 +7,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AprendizController;
 use App\Http\Middleware\SetLocale; 
 
+use App\Http\Controllers\FertilizerController;
+
 Route::get('/', function () {
     return view('welcome');
 })->middleware(SetLocale::class);
@@ -34,6 +36,13 @@ Route::middleware(['auth','role:admin'])->group(function(){
 Route::middleware(['auth', 'role:aprendiz'])->group(function(){
     Route::get('/aprendiz/dashboard', [AprendizController::class, 'index'])->name('aprendiz.dashboard');
 });
+
+//rutas de abono
+
+Route::get('/admin/create', function () {
+    // Lógica para mostrar el formulario de creación de administrador
+    return view('admin.create');
+})->name('admin.create');
 
 require __DIR__.'/auth.php';
 
