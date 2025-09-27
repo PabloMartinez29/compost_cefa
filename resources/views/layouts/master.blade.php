@@ -135,10 +135,51 @@
                     </a>
                     
                     <!-- Residuos Orgánicos -->
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
-                        <i class="fas fa-recycle w-5 text-center group-hover:text-soft-green-600"></i>
-                        <span class="font-medium">Residuos Orgánicos</span>
-                    </a>
+                    <div class="relative">
+                        <button onclick="toggleSubmenu('organicSubmenu', 'organicArrow')" 
+                            class="w-full flex items-center justify-between px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-recycle w-5 text-center group-hover:text-soft-green-600"></i>
+                                <span class="font-medium">Residuos</span>
+                            </div>
+                            <i id="organicArrow" class="fas fa-chevron-down text-soft-gray-400 text-xs arrow-transition"></i>
+                        </button>
+
+                        <!-- Submenú con animaciones -->
+                        <div id="organicSubmenu" class="submenu-container submenu-hidden ml-10 mt-2 space-y-2">
+                            <a href="{{ route('admin.organic.index') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-list w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Ver Registros</span>
+                            </a>
+                            <a href="{{ route('admin.organic.create') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-plus w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Registrar Nuevo</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Bodega de Clasificación -->
+                    <div class="relative">
+                        <button onclick="toggleSubmenu('warehouseSubmenu', 'warehouseArrow')" 
+                            class="w-full flex items-center justify-between px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-warehouse w-5 text-center group-hover:text-soft-green-600"></i>
+                                <span class="font-medium">Bodega</span>
+                            </div>
+                            <i id="warehouseArrow" class="fas fa-chevron-down text-soft-gray-400 text-xs arrow-transition"></i>
+                        </button>
+
+                        <!-- Submenú con animaciones -->
+                        <div id="warehouseSubmenu" class="submenu-container submenu-hidden ml-10 mt-2 space-y-2">
+                            <a href="{{ route('admin.warehouse.index') }}"
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-boxes w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Inventario</span>
+                            </a>
+                        </div>
+                    </div>
                     
                     <!-- Creación de Pilas -->
                     <a href="#" class="flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
@@ -247,13 +288,14 @@
         </div>                              
     </div>
 
+
     <script>
         function toggleSubmenu(id, arrowId) {
             const submenu = document.getElementById(id);
             const arrow = document.getElementById(arrowId);
 
-            // Para el menú de Abono con animaciones
-            if (id === 'abonoSubmenu') {
+            // Para los menús con animaciones (Abono, Organic Waste y Warehouse)
+            if (id === 'abonoSubmenu' || id === 'organicSubmenu' || id === 'warehouseSubmenu') {
                 const isHidden = submenu.classList.contains('submenu-hidden');
                 const submenuItems = submenu.querySelectorAll('.submenu-item');
                 
@@ -286,6 +328,9 @@
                 arrow.classList.toggle('rotate-180');
             }
         }
+
+
+
     </script>
 </body>
 </html>

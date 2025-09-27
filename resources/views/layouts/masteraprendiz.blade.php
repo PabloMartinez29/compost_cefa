@@ -66,8 +66,10 @@
     </style>
 </head>
 
+
 <body class="bg-soft-gray-50 font-sans">
     <div class="flex h-screen">
+        
         <!-- Sidebar -->
         <div class="w-64 bg-white shadow-lg sidebar-transition">
             <!-- Logo/Brand -->
@@ -93,10 +95,56 @@
                     </a>
                     
                     <!-- Residuos Orgánicos -->
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
-                        <i class="fas fa-recycle w-5 text-center group-hover:text-soft-green-600"></i>
-                        <span class="font-medium">Residuos Orgánicos</span>
-                    </a>
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="w-full flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
+                            <i class="fas fa-recycle w-5 text-center group-hover:text-soft-green-600"></i>
+                            <span class="font-medium">Residuos</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-200 ml-auto" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <!-- Submenu -->
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="ml-8 mt-2 space-y-1">
+                            <a href="{{ route('aprendiz.organic.index') }}" class="flex items-center space-x-3 px-4 py-2 text-sm text-soft-gray-600 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg transition-all duration-200 group">
+                                <i class="fas fa-list w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Ver Registros</span>
+                            </a>
+                            <a href="{{ route('aprendiz.organic.create') }}" class="flex items-center space-x-3 px-4 py-2 text-sm text-soft-gray-600 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg transition-all duration-200 group">
+                                <i class="fas fa-plus w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Registrar Nuevo</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Bodega de Clasificación -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="w-full flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
+                            <i class="fas fa-warehouse w-5 text-center group-hover:text-soft-green-600"></i>
+                            <span class="font-medium">Bodega</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-200 ml-auto" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <!-- Submenu -->
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="ml-8 mt-2 space-y-1">
+            <a href="{{ route('aprendiz.warehouse.index') }}" class="flex items-center space-x-3 px-4 py-2 text-sm text-soft-gray-600 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg transition-all duration-200 group">
+                <i class="fas fa-boxes w-4 text-center group-hover:text-soft-green-600"></i>
+                <span>Inventario</span>
+            </a>
+                        </div>
+                    </div>
                     
                     <!-- Creación de Pilas -->
                     <a href="#" class="flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">

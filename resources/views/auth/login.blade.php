@@ -112,9 +112,10 @@
                                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <i class="fas fa-envelope text-soft-gray-400"></i>
                                         </div>
-                                        <input id="email" name="email" type="email" required 
+                                        <input id="email" name="email" type="text" required 
                                                class="auth-input"
-                                               placeholder="tu@email.com">
+                                               placeholder="tu@email.com"
+                                               oninput="validateEmail(this)">
                                     </div>
                                     @error('email')
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -131,8 +132,13 @@
                                             <i class="fas fa-lock text-soft-gray-400"></i>
                                         </div>
                                         <input id="password" name="password" type="password" required 
-                                               class="auth-input"
+                                               class="auth-input pr-12"
                                                placeholder="••••••••">
+                                        <button type="button" 
+                                                onclick="togglePassword('password')"
+                                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-soft-gray-400 hover:text-soft-gray-600 transition-colors duration-200">
+                                            <i id="password-icon" class="fas fa-eye"></i>
+                                        </button>
                                     </div>
                                     @error('password')
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -305,6 +311,56 @@
         function clearAlerts() {
             const alertsContainer = document.getElementById('alerts-container');
             alertsContainer.innerHTML = '';
+        }
+
+        // Función para validar email personalizada
+        function validateEmail(input) {
+            const email = input.value;
+            const errorElement = input.parentNode.nextElementSibling;
+            
+            // Limpiar errores previos
+            if (errorElement && errorElement.classList.contains('email-error')) {
+                errorElement.remove();
+            }
+            
+            // Solo validar si hay contenido
+            if (email.length > 0) {
+                if (!email.includes('@')) {
+                    // Crear elemento de error si no existe
+                    if (!errorElement || !errorElement.classList.contains('email-error')) {
+                        const errorDiv = document.createElement('p');
+                        errorDiv.className = 'mt-2 text-sm text-red-600 email-error';
+                        errorDiv.textContent = 'El campo email debe contener el símbolo @.';
+                        input.parentNode.parentNode.appendChild(errorDiv);
+                    }
+                    input.classList.add('border-red-500');
+                    input.classList.remove('border-soft-gray-300');
+                } else {
+                    // Email válido
+                    input.classList.remove('border-red-500');
+                    input.classList.add('border-soft-gray-300');
+                }
+            } else {
+                // Campo vacío, resetear estilos
+                input.classList.remove('border-red-500');
+                input.classList.add('border-soft-gray-300');
+            }
+        }
+
+        // Función para mostrar/ocultar contraseña
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
     </script>
 </body>

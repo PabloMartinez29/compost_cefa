@@ -145,8 +145,13 @@
                                             <i class="fas fa-lock text-soft-gray-400"></i>
                                         </div>
                                         <input id="password" name="password" type="password" required 
-                                               class="auth-input"
+                                               class="auth-input pr-12"
                                                placeholder="••••••••">
+                                        <button type="button" 
+                                                onclick="togglePassword('password')"
+                                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-soft-gray-400 hover:text-soft-gray-600 transition-colors duration-200">
+                                            <i id="password-icon" class="fas fa-eye"></i>
+                                        </button>
                                     </div>
                                     <div class="mt-2 flex items-center space-x-2">
                                         <div class="password-strength-bar">
@@ -169,8 +174,13 @@
                                             <i class="fas fa-lock text-soft-gray-400"></i>
                                         </div>
                                         <input id="password_confirmation" name="password_confirmation" type="password" required 
-                                               class="auth-input"
+                                               class="auth-input pr-12"
                                                placeholder="••••••••">
+                                        <button type="button" 
+                                                onclick="togglePassword('password_confirmation')"
+                                                class="absolute inset-y-0 right-0 pr-4 flex items-center text-soft-gray-400 hover:text-soft-gray-600 transition-colors duration-200">
+                                            <i id="password_confirmation-icon" class="fas fa-eye"></i>
+                                        </button>
                                     </div>
                                     @error('password_confirmation')
                                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -370,6 +380,22 @@
         function clearAlerts() {
             const alertsContainer = document.getElementById('alerts-container');
             alertsContainer.innerHTML = '';
+        }
+
+        // Función para mostrar/ocultar contraseña
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(inputId + '-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
     </script>
 </body>
