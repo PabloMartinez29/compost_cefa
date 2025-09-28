@@ -27,7 +27,11 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', function ($attribute, $value, $fail) {
+                if (!str_contains($value, '@')) {
+                    $fail('El campo email debe contener el símbolo @.');
+                }
+            }],
             'password' => ['required', 'string'],
         ];
     }
@@ -41,7 +45,11 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        // Convertir email a minúsculas para la autenticación pero mantener el original para validación
+        $credentials = $this->only('email', 'password');
+        $credentials['email'] = strtolower($credentials['email']);
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

@@ -8,7 +8,6 @@ use App\Http\Controllers\AprendizController;
 use App\Http\Middleware\SetLocale; 
 
 use App\Http\Controllers\FertilizerController;
-use App\Http\Controllers\MachineryController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,21 +29,27 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth','role:admin'])->group(function(){
 
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('dashboard.admin');
-    
-    // Rutas de maquinaria
-    Route::resource('machinery', MachineryController::class);
-    
-    // Rutas de mantenimiento de maquinaria
-    Route::get('machinery-maintenance', [MachineryController::class, 'indexMaintenance'])->name('machinery.maintenance.index');
-    Route::get('machinery-maintenance/create', [MachineryController::class, 'createMaintenance'])->name('machinery.maintenance.create');
-    Route::post('machinery-maintenance', [MachineryController::class, 'storeMaintenance'])->name('machinery.maintenance.store');
-    Route::get('machinery/{machinery}/maintenance', [MachineryController::class, 'showMaintenance'])->name('machinery.maintenance.show');
 });
 
 
 //Ruta de aprendiz
 Route::middleware(['auth', 'role:aprendiz'])->group(function(){
     Route::get('/aprendiz/dashboard', [AprendizController::class, 'index'])->name('aprendiz.dashboard');
+    
+    // Organic Waste Management Routes for Apprentices
+    Route::resource('aprendiz/organic', AprendizOrganicController::class)->names([
+        'index' => 'aprendiz.organic.index',
+        'create' => 'aprendiz.organic.create',
+        'store' => 'aprendiz.organic.store',
+        'show' => 'aprendiz.organic.show',
+        'edit' => 'aprendiz.organic.edit',
+        'update' => 'aprendiz.organic.update',
+        'destroy' => 'aprendiz.organic.destroy',
+    ]);
+
+    // Warehouse Classification Routes for Apprentices
+    Route::get('aprendiz/warehouse', [AprendizWarehouseController::class, 'index'])->name('aprendiz.warehouse.index');
+    Route::get('aprendiz/warehouse/{type}', [AprendizWarehouseController::class, 'inventory'])->name('aprendiz.warehouse.inventory');
 });
 
 //rutas de abono

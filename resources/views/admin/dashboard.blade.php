@@ -167,10 +167,10 @@
                     <i class="fas fa-plus mr-2"></i>
                     Crear Nueva Pila
                 </a>
-                <a href="#" class="action-btn-info">
-                    <i class="fas fa-leaf mr-2"></i>
-                    Entrada de Residuos
-                </a>
+                        <button onclick="openCreateModal()" class="action-btn-info">
+            <i class="fas fa-leaf mr-2"></i>
+            Entrada de Residuos
+        </button>
                 <a href="#" class="action-btn-orange">
                     <i class="fas fa-cogs mr-2"></i>
                     Gestionar Maquinaria
