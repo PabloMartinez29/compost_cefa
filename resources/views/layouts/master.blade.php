@@ -74,9 +74,15 @@
         }
         
         .submenu-visible {
-            max-height: 200px;
+            max-height: 300px;
             opacity: 1;
             transform: translateY(0);
+            overflow-y: auto;
+        }
+        
+        /* Estilo específico para submenu de maquinaria con más elementos */
+        #maquinariaSubmenu.submenu-visible {
+            max-height: 350px;
         }
         
         .submenu-item {
@@ -147,10 +153,40 @@
                     </a>
                     
                     <!-- Maquinaria -->
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
-                        <i class="fas fa-cogs w-5 text-center group-hover:text-soft-green-600"></i>
-                        <span class="font-medium">Maquinaria</span>
-                    </a>
+                    <div class="relative">
+                        <button onclick="toggleSubmenu('maquinariaSubmenu', 'maquinariaArrow')" 
+                            class="w-full flex items-center justify-between px-4 py-3 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-xl transition-all duration-200 group">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-cogs w-5 text-center group-hover:text-soft-green-600"></i>
+                                <span class="font-medium">Maquinaria</span>
+                            </div>
+                            <i id="maquinariaArrow" class="fas fa-chevron-down text-soft-gray-400 text-xs arrow-transition"></i>
+                        </button>
+
+                        <!-- Submenú con animaciones -->
+                        <div id="maquinariaSubmenu" class="submenu-container submenu-hidden ml-10 mt-2 space-y-2">
+                            <a href="{{ route('machinery.create') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-edit w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Registro</span>
+                            </a>
+                            <a href="{{ route('machinery.index') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-list w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Listas</span>
+                            </a>
+                            <a href="{{ route('machinery.maintenance.create') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-wrench w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Registrar Mantenimiento</span>
+                            </a>
+                            <a href="{{ route('machinery.maintenance.index') }}" 
+                               class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
+                                <i class="fas fa-clipboard-list w-4 text-center group-hover:text-soft-green-600"></i>
+                                <span>Lista de Mantenimientos</span>
+                            </a>
+                        </div>
+                    </div>
                     
                     <!-- Abono -->
                     <div class="relative">
@@ -252,8 +288,8 @@
             const submenu = document.getElementById(id);
             const arrow = document.getElementById(arrowId);
 
-            // Para el menú de Abono con animaciones
-            if (id === 'abonoSubmenu') {
+            // Para los menús con animaciones (Abono y Maquinaria)
+            if (id === 'abonoSubmenu' || id === 'maquinariaSubmenu') {
                 const isHidden = submenu.classList.contains('submenu-hidden');
                 const submenuItems = submenu.querySelectorAll('.submenu-item');
                 
