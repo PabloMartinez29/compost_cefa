@@ -18,7 +18,8 @@ class Organic extends Model
         'notes',
         'delivered_by',
         'received_by',
-        'img'
+        'img',
+        'created_by'
     ];
 
     protected $casts = [
@@ -61,5 +62,22 @@ class Organic extends Model
         ];
 
         return $types[$this->type] ?? $this->type;
+    }
+
+    // Relaciones
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    // Accessor para información del creador
+    public function getCreatedByInfoAttribute()
+    {
+        if (!$this->creator) {
+            return 'Usuario no disponible';
+        }
+
+        $role = $this->creator->role === 'admin' ? 'Administrador' : 'Aprendiz';
+        return "{$role} - {$this->creator->name}";
     }
 }

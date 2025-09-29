@@ -103,6 +103,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Fecha</th>
+                        <th>Imagen</th>
                         <th>Tipo</th>
                         <th>Peso (Kg)</th>
                         <th>Entregado Por</th>
@@ -115,6 +116,23 @@
                         <tr>
                             <td class="font-mono">#{{ str_pad($organic->id, 3, '0', STR_PAD_LEFT) }}</td>
                             <td>{{ $organic->formatted_date }}</td>
+                            <td>
+                                @if($organic->img)
+                                    <!-- Debug: {{ Storage::url($organic->img) }} -->
+                                    <img src="{{ Storage::url($organic->img) }}?v={{ $organic->updated_at->timestamp }}" 
+                                         alt="Imagen del residuo" 
+                                         class="w-12 h-12 object-cover rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                                         onclick="openImageModal('{{ Storage::url($organic->img) }}?v={{ $organic->updated_at->timestamp }}')"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center" style="display: none;">
+                                        <i class="fas fa-image text-gray-400"></i>
+                                    </div>
+                                @else
+                                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400"></i>
+                                    </div>
+                                @endif
+                            </td>
                             <td>
                                 <span class="waste-badge 
                                     @if($organic->type == 'Kitchen') waste-badge-success
@@ -130,14 +148,14 @@
                             <td>{{ $organic->received_by }}</td>
                             <td>
                                 <div class="flex space-x-2">
-                                    <a href="{{ route('admin.organic.show', $organic) }}" 
-                                       class="text-blue-500 hover:text-blue-700" title="View Details">
+                                    <button onclick="openViewModal({{ $organic->id }})" 
+                                       class="text-blue-500 hover:text-blue-700" title="Ver Detalles">
                                         <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('admin.organic.edit', $organic) }}" 
-                                       class="text-green-500 hover:text-green-700" title="Edit">
+                                    </button>
+                                    <button onclick="openEditModal({{ $organic->id }})" 
+                                       class="text-green-500 hover:text-green-700" title="Editar">
                                         <i class="fas fa-edit"></i>
-                                    </a>
+                                    </button>
                                     <form action="{{ route('admin.organic.destroy', $organic) }}" 
                                           method="POST" class="inline" 
                                           onsubmit="return confirm('Are you sure you want to delete this record?')">
@@ -177,7 +195,7 @@
 </div>
 
 <!-- Modal para Crear Registro -->
-<div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+<div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 modal-backdrop-blur overflow-y-auto h-full w-full z-50 hidden">
     <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
         <!-- Modal Header -->
         <div class="flex items-center justify-between pb-4 border-b border-gray-200">
@@ -336,6 +354,233 @@
     </div>
 </div>
 
+<!-- Modal de Editar -->
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="waste-header">
+            <div class="text-center">
+                <h3 class="waste-title text-xl justify-center">
+                    <i class="fas fa-edit waste-icon"></i>
+                    Editar Registro de Residuo Orgánico
+                </h3>
+                <p class="waste-subtitle">
+                    <i class="fas fa-user-shield text-green-400 mr-2"></i>
+                    <span id="editUserInfo">{{ Auth::user()->name }} - Registro #<span id="editRecordId"></span></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+            <form id="editForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                
+                <!-- Date -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Fecha *</label>
+                    <input type="date" name="date" id="editDate" class="waste-form-input @error('date') border-red-500 @enderror" required>
+                    @error('date')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Type -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Tipo de Residuo *</label>
+                    <div class="relative">
+                        <select name="type" id="editType" class="waste-form-select @error('type') border-red-500 @enderror" required>
+                            <option value="">Seleccionar tipo de residuo</option>
+                            <option value="Kitchen">Cocina</option>
+                            <option value="Beds">Camas</option>
+                            <option value="Leaves">Hojas</option>
+                            <option value="CowDung">Estiércol de Vaca</option>
+                            <option value="ChickenManure">Gallinaza</option>
+                            <option value="PigManure">Estiércol de Cerdo</option>
+                            <option value="Other">Otro</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
+                    @error('type')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Weight -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Peso (Kg) *</label>
+                    <input type="number" name="weight" id="editWeight" class="waste-form-input @error('weight') border-red-500 @enderror" 
+                           placeholder="Ingrese el peso en kilogramos" step="0.01" min="0.01" required>
+                    @error('weight')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Delivered By -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Entregado Por *</label>
+                    <input type="text" name="delivered_by" id="editDeliveredBy" class="waste-form-input @error('delivered_by') border-red-500 @enderror" 
+                           placeholder="Ingrese el nombre del entregador" required>
+                    @error('delivered_by')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Received By -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Recibido Por *</label>
+                    <input type="text" name="received_by" id="editReceivedBy" class="waste-form-input @error('received_by') border-red-500 @enderror" 
+                           placeholder="Ingrese el nombre del receptor" required>
+                    @error('received_by')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Current Image -->
+                <div id="currentImageContainer" class="waste-form-group hidden">
+                    <label class="waste-form-label">Imagen Actual</label>
+                    <div class="relative">
+                        <img id="currentImage" src="" alt="Imagen actual del residuo orgánico" 
+                             class="w-full h-32 object-cover rounded-lg border border-gray-200">
+                    </div>
+                </div>
+
+                <!-- New Image Upload -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Nueva Imagen (Opcional)</label>
+                    <input type="file" name="img" class="waste-form-input @error('img') border-red-500 @enderror" 
+                           accept="image/*">
+                    @error('img')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                    <p class="text-gray-500 text-sm mt-1">Tamaño máximo: 2MB. Formatos soportados: JPEG, PNG, JPG, GIF</p>
+                    <p id="imageReplaceWarning" class="text-yellow-600 text-sm mt-1 hidden">Subir una nueva imagen reemplazará la actual.</p>
+                </div>
+
+                <!-- Notes -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Notas</label>
+                    <textarea name="notes" id="editNotes" class="waste-form-textarea @error('notes') border-red-500 @enderror" 
+                              rows="4" placeholder="Ingrese notas adicionales sobre el residuo orgánico..."></textarea>
+                    @error('notes')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <button type="button" onclick="closeEditModal()" class="waste-btn-secondary">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="waste-btn">
+                        <i class="fas fa-save mr-2"></i>
+                        Actualizar Registro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para visualizar imagen -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
+    <div class="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center">
+        <!-- Botón de cerrar -->
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        
+        <!-- Imagen -->
+        <img id="modalImage" src="" alt="Imagen del residuo orgánico" 
+             class="max-w-4xl max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-2xl mx-auto">
+    </div>
+</div>
+
+<!-- Modal para ver detalles del residuo -->
+<div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="waste-header">
+            <div class="text-center">
+                <h3 class="waste-title text-xl justify-center">
+                    <i class="fas fa-eye waste-icon"></i>
+                    Detalles del Residuo Orgánico
+                </h3>
+                <p class="waste-subtitle">
+                    <i class="fas fa-user-shield text-green-400 mr-2"></i>
+                    <span id="viewUserInfo">{{ Auth::user()->name }} - Registro #<span id="viewRecordId"></span></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+            <div class="space-y-6">
+                <!-- Imagen del residuo -->
+                <div id="viewImageContainer" class="text-center">
+                    <img id="viewImage" src="" alt="Imagen del residuo orgánico" 
+                         class="max-w-full h-64 object-cover rounded-lg shadow-md mx-auto cursor-pointer"
+                         onclick="openImageModal(this.src)">
+                </div>
+
+                <!-- Información del residuo -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Fecha</label>
+                        <div class="waste-form-input bg-gray-50" id="viewDate"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Tipo de Residuo</label>
+                        <div class="waste-form-input bg-gray-50" id="viewType"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Peso (Kg)</label>
+                        <div class="waste-form-input bg-gray-50" id="viewWeight"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Entregado Por</label>
+                        <div class="waste-form-input bg-gray-50" id="viewDeliveredBy"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Recibido Por</label>
+                        <div class="waste-form-input bg-gray-50" id="viewReceivedBy"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Fecha de Creación</label>
+                        <div class="waste-form-input bg-gray-50" id="viewCreatedAt"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Creado Por</label>
+                        <div class="waste-form-input bg-gray-50" id="viewCreatedBy"></div>
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Notas</label>
+                    <div class="waste-form-textarea bg-gray-50" id="viewNotes" style="min-height: 100px;"></div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end pt-6 border-t border-gray-200">
+                    <button onclick="closeViewModal()" class="waste-btn-secondary">
+                        <i class="fas fa-times mr-2"></i>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function openCreateModal() {
     document.getElementById('createModal').classList.remove('hidden');
@@ -383,6 +628,155 @@ document.getElementById('createModal').addEventListener('click', function(e) {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeCreateModal();
+    }
+});
+
+// Funciones para el modal de editar
+function openEditModal(organicId) {
+    // Obtener datos del registro
+    fetch(`/admin/organic/${organicId}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Llenar el formulario
+            document.getElementById('editRecordId').textContent = data.id.toString().padStart(3, '0');
+            document.getElementById('editDate').value = data.date;
+            document.getElementById('editType').value = data.type;
+            document.getElementById('editWeight').value = data.weight;
+            document.getElementById('editDeliveredBy').value = data.delivered_by;
+            document.getElementById('editReceivedBy').value = data.received_by;
+            document.getElementById('editNotes').value = data.notes || '';
+            
+            // Mostrar imagen actual si existe
+            if (data.img && data.img_url) {
+                document.getElementById('currentImage').src = data.img_url;
+                document.getElementById('currentImageContainer').classList.remove('hidden');
+                document.getElementById('imageReplaceWarning').classList.remove('hidden');
+            } else {
+                document.getElementById('currentImageContainer').classList.add('hidden');
+                document.getElementById('imageReplaceWarning').classList.add('hidden');
+            }
+            
+            // Configurar acción del formulario
+            document.getElementById('editForm').action = `/admin/organic/${organicId}`;
+            
+            // Mostrar modal
+            document.getElementById('editModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los datos del registro');
+        });
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Cerrar modal de editar al hacer clic fuera
+document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeEditModal();
+    }
+});
+
+// Cerrar modal de editar con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditModal();
+    }
+});
+
+// Funciones para el modal de imagen
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Cerrar modal de imagen al hacer clic fuera
+document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeImageModal();
+    }
+});
+
+// Cerrar modal de imagen con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeImageModal();
+    }
+});
+
+// Funciones para el modal de vista
+function openViewModal(organicId) {
+    // Obtener datos del registro
+    fetch(`/admin/organic/${organicId}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Llenar el formulario
+            document.getElementById('viewRecordId').textContent = data.id.toString().padStart(3, '0');
+            document.getElementById('viewDate').textContent = data.date_formatted || data.date;
+            document.getElementById('viewType').textContent = data.type_in_spanish || data.type;
+            document.getElementById('viewWeight').textContent = data.formatted_weight || data.weight + ' Kg';
+            document.getElementById('viewDeliveredBy').textContent = data.delivered_by;
+            document.getElementById('viewReceivedBy').textContent = data.received_by;
+            document.getElementById('viewCreatedAt').textContent = data.created_at_formatted || data.created_at;
+            document.getElementById('viewCreatedBy').textContent = data.created_by_info || 'Información no disponible';
+            document.getElementById('viewNotes').textContent = data.notes || 'Sin notas';
+            
+            // Mostrar imagen si existe
+            if (data.img && data.img_url) {
+                document.getElementById('viewImage').src = data.img_url;
+                document.getElementById('viewImageContainer').style.display = 'block';
+            } else {
+                document.getElementById('viewImageContainer').style.display = 'none';
+            }
+            
+            
+            // Mostrar modal
+            document.getElementById('viewModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar los datos del registro');
+        });
+}
+
+function closeViewModal() {
+    document.getElementById('viewModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+
+// Cerrar modal de vista al hacer clic fuera
+document.getElementById('viewModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeViewModal();
+    }
+});
+
+// Cerrar modal de vista con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeViewModal();
     }
 });
 </script>

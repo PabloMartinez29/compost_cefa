@@ -24,6 +24,17 @@
         @apply text-gray-600 text-lg;
     }
     
+    /* Modal blur effect */
+    .modal-backdrop {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    
+    .modal-backdrop-blur {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+    
     .waste-card {
         @apply bg-white rounded-lg shadow-sm p-6 border-l-4 transition-all duration-300 hover:shadow-md hover:transform hover:-translate-y-1;
     }
