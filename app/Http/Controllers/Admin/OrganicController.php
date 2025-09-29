@@ -46,7 +46,12 @@ class OrganicController extends Controller
             'delivered_by' => 'required|string|max:100',
             'received_by' => 'required|string|max:100',
             'notes' => 'nullable|string',
-            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'img.required' => 'La imagen es obligatoria.',
+            'img.image' => 'El archivo debe ser una imagen válida.',
+            'img.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
+            'img.max' => 'La imagen no debe ser mayor a 2048 kilobytes (2MB).'
         ]);
 
         $data = $request->all();
@@ -97,7 +102,7 @@ class OrganicController extends Controller
                 'received_by' => $organic->received_by,
                 'notes' => $organic->notes,
                 'img' => $organic->img,
-                'img_url' => $organic->img ? Storage::url($organic->img) : null,
+                'img_url' => $organic->img ? route('storage.local', ['path' => $organic->img]) : null,
                 'created_at' => $organic->created_at->format('Y-m-d H:i:s'),
                 'created_at_formatted' => $organic->created_at->format('d/m/Y H:i:s'),
                 'created_by_info' => $organic->created_by_info,
@@ -129,6 +134,10 @@ class OrganicController extends Controller
             'received_by' => 'required|string|max:100',
             'notes' => 'nullable|string',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'img.image' => 'El archivo debe ser una imagen válida.',
+            'img.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
+            'img.max' => 'La imagen no debe ser mayor a 2048 kilobytes (2MB).'
         ]);
 
         $data = $request->all();

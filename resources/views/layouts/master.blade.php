@@ -216,7 +216,7 @@
                                 <i class="fas fa-list w-4 text-center group-hover:text-soft-green-600"></i>
                                 <span>Listas</span>
                             </a>
-                            <a href="{{ route('machinery.maintenance.create') }}" 
+                            <a href="{{ route('machinery.index') }}" 
                                class="submenu-item flex items-center space-x-3 px-4 py-2 text-soft-gray-700 hover:bg-soft-green-50 hover:text-soft-green-700 rounded-lg font-medium">
                                 <i class="fas fa-wrench w-4 text-center group-hover:text-soft-green-600"></i>
                                 <span>Registrar Mantenimiento</span>
@@ -268,6 +268,30 @@
                 
                 <!-- User Menu -->
                 <div class="flex items-center space-x-4">
+                    <!-- Notification Bell -->
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" 
+                            class="relative p-2 text-soft-gray-600 hover:text-soft-green-600 hover:bg-soft-gray-100 rounded-lg transition-all duration-200">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                        </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-soft-gray-200 z-50">
+                            <div class="p-4 border-b border-soft-gray-100">
+                                <h3 class="text-sm font-semibold text-soft-gray-800">Notificaciones</h3>
+                            </div>
+                            <div id="notificationsList" class="max-h-64 overflow-y-auto">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            <div class="p-2 border-t border-soft-gray-100">
+                                <button onclick="markAllAsRead()" class="w-full text-xs text-soft-gray-500 hover:text-soft-green-600 text-center py-1">
+                                    Marcar todas como leídas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="relative">
                         <button onclick="toggleSubmenu('userMenu', 'userArrow')" 
                             class="flex items-center space-x-3 hover:bg-soft-gray-100 rounded-lg px-3 py-2 transition-all duration-200">
@@ -330,8 +354,8 @@
             const submenu = document.getElementById(id);
             const arrow = document.getElementById(arrowId);
 
-            // Para el menú de Abono con animaciones
-            if (id === 'abonoSubmenu') {
+            // Para todos los submenús con animaciones
+            if (['abonoSubmenu', 'organicSubmenu', 'warehouseSubmenu', 'maquinariaSubmenu'].includes(id)) {
                 const isHidden = submenu.classList.contains('submenu-hidden');
                 const submenuItems = submenu.querySelectorAll('.submenu-item');
                 
@@ -365,7 +389,156 @@
             }
         }
 
+        // Notification functions
+        let notifications = [];
+        let notificationInterval;
 
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationsDropdown');
+            dropdown.classList.toggle('hidden');
+            
+            if (!dropdown.classList.contains('hidden')) {
+                loadNotifications();
+            }
+        }
+
+        function loadNotifications() {
+            fetch('/notifications', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                notifications = data;
+                updateNotificationBadge();
+                renderNotifications();
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+            });
+        }
+
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            const unreadCount = notifications.filter(n => !n.read_at).length;
+            
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function renderNotifications() {
+            const container = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-soft-gray-500 text-sm">No hay notificaciones</div>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="p-3 border-b border-soft-gray-100 hover:bg-soft-gray-50 transition-colors">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-soft-gray-800">${notification.type_name}</p>
+                            <p class="text-xs text-soft-gray-600 mt-1">${notification.message}</p>
+                            <p class="text-xs text-soft-gray-500 mt-1">De: ${notification.from_user.name}</p>
+                            <p class="text-xs text-soft-gray-500">Registro #${notification.organic.id.toString().padStart(3, '0')}</p>
+                        </div>
+                        <div class="flex space-x-1 ml-2">
+                            <button onclick="approveDelete(${notification.id})" 
+                                class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="rejectDelete(${notification.id})" 
+                                class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function approveDelete(notificationId) {
+            fetch('/notifications/approve-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ notification_id: notificationId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotifications();
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error approving delete:', error);
+            });
+        }
+
+        function rejectDelete(notificationId) {
+            fetch('/notifications/reject-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ notification_id: notificationId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotifications();
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error rejecting delete:', error);
+            });
+        }
+
+        function markAllAsRead() {
+            notifications.forEach(notification => {
+                if (!notification.read_at) {
+                    fetch('/notifications/mark-read', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ notification_id: notification.id })
+                    });
+                }
+            });
+            loadNotifications();
+        }
+
+        // Load notifications on page load and set up polling
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotifications();
+            
+            // Poll for new notifications every 30 seconds
+            notificationInterval = setInterval(loadNotifications, 30000);
+        });
+
+        // Close notifications dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationsDropdown');
+            const button = event.target.closest('button[onclick="toggleNotifications()"]');
+            
+            if (!dropdown.contains(event.target) && !button) {
+                dropdown.classList.add('hidden');
+            }
+        });
 
     </script>
 </body>

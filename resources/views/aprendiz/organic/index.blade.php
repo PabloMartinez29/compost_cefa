@@ -1,7 +1,34 @@
-@extends('layouts.master')
+@extends('layouts.masteraprendiz')
 
 @section('content')
 @vite(['resources/css/waste.css'])
+
+<!-- Notification Alerts -->
+@if(isset($recentNotifications) && $recentNotifications->count() > 0)
+    @foreach($recentNotifications as $notification)
+        <div id="notification-alert-{{ $notification->id }}" class="fixed top-4 right-4 z-50 max-w-sm bg-white rounded-lg shadow-lg border-l-4 {{ $notification->status === 'approved' ? 'border-green-500' : 'border-red-500' }} animate-slide-in-right">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas {{ $notification->status === 'approved' ? 'fa-check-circle text-green-500' : 'fa-times-circle text-red-500' }} text-xl"></i>
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-sm font-medium text-gray-900">
+                            {{ $notification->status === 'approved' ? 'Solicitud Aprobada' : 'Solicitud Rechazada' }}
+                        </h3>
+                        <p class="text-sm text-gray-500 mt-1">{{ $notification->message }}</p>
+                        <div class="mt-2">
+                            <button onclick="closeNotificationAlert({{ $notification->id }})" 
+                                class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1 rounded">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+@endif
 
 <div class="container mx-auto px-6 py-8">
     <!-- Header -->
@@ -13,8 +40,8 @@
                     Gestión de Residuos Orgánicos
                 </h1>
                 <p class="waste-subtitle">
-                    <i class="fas fa-user-shield text-green-400 mr-2"></i>
-                    {{ Auth::user()->name }} - Admin Panel
+                    <i class="fas fa-user-graduate text-green-400 mr-2"></i>
+                    {{ Auth::user()->name }} - Panel de Aprendiz
                 </p>
             </div>
             <div class="text-right">
@@ -85,7 +112,7 @@
                 <i class="fas fa-table text-green-600 mr-2"></i>
                 Registros de Residuos Orgánicos
             </h2>
-            <a href="{{ route('admin.organic.create') }}" class="bg-green-400 text-green-800 border border-green-500 hover:bg-green-500 px-4 py-2 rounded-lg transition-all duration-200 flex items-center shadow-sm">
+            <a href="{{ route('aprendiz.organic.create') }}" class="bg-green-400 text-green-800 border border-green-500 hover:bg-green-500 px-4 py-2 rounded-lg transition-all duration-200 flex items-center shadow-sm">
                 <i class="fas fa-plus mr-2"></i>
                 Nuevo Registro
             </a>
@@ -94,6 +121,13 @@
         @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('permission_required'))
+            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                {{ session('permission_required') }}
             </div>
         @endif
 
@@ -108,6 +142,7 @@
                         <th>Peso (Kg)</th>
                         <th>Entregado Por</th>
                         <th>Recibido Por</th>
+                        <th>Creado por</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -121,7 +156,6 @@
                                     @php
                                         $imageUrl = route('storage.local', ['path' => $organic->img]);
                                     @endphp
-                                    <!-- Debug: {{ $imageUrl }} -->
                                     <img src="{{ $imageUrl }}?v={{ $organic->updated_at->timestamp }}" 
                                          alt="Imagen del residuo" 
                                          class="w-12 h-12 object-cover rounded-full cursor-pointer hover:opacity-80 transition-opacity"
@@ -150,30 +184,52 @@
                             <td>{{ $organic->delivered_by }}</td>
                             <td>{{ $organic->received_by }}</td>
                             <td>
+                                <div class="flex items-center">
+                                    @if($organic->creator && $organic->creator->role === 'admin')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
+                                            <i class="fas fa-user-shield mr-1"></i>
+                                            Administrador
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                                            <i class="fas fa-user-graduate mr-1"></i>
+                                            Aprendiz
+                                        </span>
+                                    @endif
+                                    <span class="text-sm text-gray-600">{{ $organic->creator ? $organic->creator->name : 'Usuario no disponible' }}</span>
+                                </div>
+                            </td>
+                            <td>
                                 <div class="flex space-x-2">
                                     <button onclick="openViewModal({{ $organic->id }})" 
                                        class="text-blue-500 hover:text-blue-700" title="Ver Detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button onclick="openEditModal({{ $organic->id }})" 
-                                       class="text-green-500 hover:text-green-700" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <form action="{{ route('admin.organic.destroy', $organic) }}" 
-                                          method="POST" class="inline" 
-                                          onsubmit="return confirm('Are you sure you want to delete this record?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                    @if($organic->created_by == auth()->id())
+                                        <button onclick="openEditModal({{ $organic->id }})" 
+                                           class="text-green-500 hover:text-green-700" title="Editar">
+                                            <i class="fas fa-edit"></i>
                                         </button>
-                                    </form>
+                                        <form action="{{ route('aprendiz.organic.request-delete', $organic) }}" method="POST" class="inline">
+                                            @csrf
+                                            <button type="submit" 
+                                               class="text-red-500 hover:text-red-700" title="Solicitar Eliminación"
+                                               onclick="return confirm('¿Desea solicitar permiso al administrador para eliminar este registro?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button onclick="showPermissionAlert()" 
+                                           class="text-gray-400 cursor-not-allowed" title="Sin permisos">
+                                            <i class="fas fa-lock"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-gray-500">
+                            <td colspan="9" class="text-center py-8 text-gray-500">
                                 <i class="fas fa-inbox text-4xl mb-4 block"></i>
                                 No se encontraron registros de residuos orgánicos
                             </td>
@@ -218,15 +274,15 @@
 
         <!-- Modal Body -->
         <div class="py-6">
-            <form id="createForm" action="{{ route('admin.organic.store') }}" method="POST" enctype="multipart/form-data">
+            <form id="createForm" action="{{ route('aprendiz.organic.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Fecha -->
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-calendar-alt text-green-500 mr-2"></i>
-                            Fecha *
+                            Fecha del Registro *
                         </label>
                         <input type="date" name="date" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 @error('date') border-red-500 @enderror" 
@@ -237,7 +293,7 @@
                     </div>
 
                     <!-- Tipo de Residuo -->
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-recycle text-green-500 mr-2"></i>
                             Tipo de Residuo *
@@ -263,7 +319,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-weight text-green-500 mr-2"></i>
-                            Peso (Kg) *
+                            Peso (Kilogramos) *
                         </label>
                         <input type="number" name="weight" 
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 @error('weight') border-red-500 @enderror" 
@@ -305,7 +361,7 @@
                     </div>
 
                     <!-- Imagen -->
-                    <div class="md:col-span-2">
+                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-image text-green-500 mr-2"></i>
                             Imagen (Requerido)
@@ -324,11 +380,11 @@
                         <p class="text-gray-500 text-sm mt-1">Tamaño máximo: 2MB. Formatos: JPEG, PNG, JPG, GIF</p>
                     </div>
 
-                    <!-- Notas -->
+                    <!-- Notas Adicionales -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-sticky-note text-green-500 mr-2"></i>
-                            Notas
+                            Notas Adicionales
                         </label>
                         <textarea name="notes" 
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 resize-none @error('notes') border-red-500 @enderror" 
@@ -357,6 +413,103 @@
     </div>
 </div>
 
+<!-- Modal para visualizar imagen -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
+    <div class="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center">
+        <!-- Botón de cerrar -->
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        
+        <!-- Imagen -->
+        <img id="modalImage" src="" alt="Imagen del residuo orgánico" 
+             class="max-w-4xl max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-2xl mx-auto">
+    </div>
+</div>
+
+<!-- Modal para ver detalles del residuo -->
+<div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="waste-header">
+            <div class="text-center">
+                <h3 class="waste-title text-xl justify-center">
+                    <i class="fas fa-eye waste-icon"></i>
+                    Detalles del Residuo Orgánico
+                </h3>
+                <p class="waste-subtitle">
+                    <i class="fas fa-user-graduate text-green-400 mr-2"></i>
+                    <span id="viewUserInfo">{{ Auth::user()->name }} - Registro #<span id="viewRecordId"></span></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6">
+            <div class="space-y-6">
+                <!-- Imagen del residuo -->
+                <div id="viewImageContainer" class="text-center">
+                    <img id="viewImage" src="" alt="Imagen del residuo orgánico" 
+                         class="max-w-full h-64 object-cover rounded-lg shadow-md mx-auto cursor-pointer"
+                         onclick="openImageModal(this.src)">
+                </div>
+
+                <!-- Información del residuo -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Fecha</label>
+                        <div class="waste-form-input bg-gray-50" id="viewDate"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Tipo de Residuo</label>
+                        <div class="waste-form-input bg-gray-50" id="viewType"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Peso (Kg)</label>
+                        <div class="waste-form-input bg-gray-50" id="viewWeight"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Entregado Por</label>
+                        <div class="waste-form-input bg-gray-50" id="viewDeliveredBy"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Recibido Por</label>
+                        <div class="waste-form-input bg-gray-50" id="viewReceivedBy"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Fecha de Creación</label>
+                        <div class="waste-form-input bg-gray-50" id="viewCreatedAt"></div>
+                    </div>
+
+                    <div class="waste-form-group">
+                        <label class="waste-form-label">Creado Por</label>
+                        <div class="waste-form-input bg-gray-50" id="viewCreatedBy"></div>
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="waste-form-group">
+                    <label class="waste-form-label">Notas</label>
+                    <div class="waste-form-textarea bg-gray-50" id="viewNotes" style="min-height: 100px;"></div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end pt-6 border-t border-gray-200">
+                    <button onclick="closeViewModal()" class="waste-btn-secondary">
+                        <i class="fas fa-times mr-2"></i>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de Editar -->
 <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -368,7 +521,7 @@
                     Editar Registro de Residuo Orgánico
                 </h3>
                 <p class="waste-subtitle">
-                    <i class="fas fa-user-shield text-green-400 mr-2"></i>
+                    <i class="fas fa-user-graduate text-green-400 mr-2"></i>
                     <span id="editUserInfo">{{ Auth::user()->name }} - Registro #<span id="editRecordId"></span></span>
                 </p>
             </div>
@@ -487,103 +640,6 @@
     </div>
 </div>
 
-<!-- Modal para visualizar imagen -->
-<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
-    <div class="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center">
-        <!-- Botón de cerrar -->
-        <button onclick="closeImageModal()" class="absolute top-4 right-4 z-10 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-75 transition-all">
-            <i class="fas fa-times text-xl"></i>
-        </button>
-        
-        <!-- Imagen -->
-        <img id="modalImage" src="" alt="Imagen del residuo orgánico" 
-             class="max-w-4xl max-h-[80vh] w-auto h-auto object-contain rounded-lg shadow-2xl mx-auto">
-    </div>
-</div>
-
-<!-- Modal para ver detalles del residuo -->
-<div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop-blur hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <!-- Modal Header -->
-        <div class="waste-header">
-            <div class="text-center">
-                <h3 class="waste-title text-xl justify-center">
-                    <i class="fas fa-eye waste-icon"></i>
-                    Detalles del Residuo Orgánico
-                </h3>
-                <p class="waste-subtitle">
-                    <i class="fas fa-user-shield text-green-400 mr-2"></i>
-                    <span id="viewUserInfo">{{ Auth::user()->name }} - Registro #<span id="viewRecordId"></span></span>
-                </p>
-            </div>
-        </div>
-
-        <!-- Modal Body -->
-        <div class="p-6">
-            <div class="space-y-6">
-                <!-- Imagen del residuo -->
-                <div id="viewImageContainer" class="text-center">
-                    <img id="viewImage" src="" alt="Imagen del residuo orgánico" 
-                         class="max-w-full h-64 object-cover rounded-lg shadow-md mx-auto cursor-pointer"
-                         onclick="openImageModal(this.src)">
-                </div>
-
-                <!-- Información del residuo -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Fecha</label>
-                        <div class="waste-form-input bg-gray-50" id="viewDate"></div>
-                    </div>
-
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Tipo de Residuo</label>
-                        <div class="waste-form-input bg-gray-50" id="viewType"></div>
-                    </div>
-
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Peso (Kg)</label>
-                        <div class="waste-form-input bg-gray-50" id="viewWeight"></div>
-                    </div>
-
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Entregado Por</label>
-                        <div class="waste-form-input bg-gray-50" id="viewDeliveredBy"></div>
-                    </div>
-
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Recibido Por</label>
-                        <div class="waste-form-input bg-gray-50" id="viewReceivedBy"></div>
-                    </div>
-
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Fecha de Creación</label>
-                        <div class="waste-form-input bg-gray-50" id="viewCreatedAt"></div>
-                    </div>
-
-                    <div class="waste-form-group">
-                        <label class="waste-form-label">Creado Por</label>
-                        <div class="waste-form-input bg-gray-50" id="viewCreatedBy"></div>
-                    </div>
-                </div>
-
-                <!-- Notas -->
-                <div class="waste-form-group">
-                    <label class="waste-form-label">Notas</label>
-                    <div class="waste-form-textarea bg-gray-50" id="viewNotes" style="min-height: 100px;"></div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="flex justify-end pt-6 border-t border-gray-200">
-                    <button onclick="closeViewModal()" class="waste-btn-secondary">
-                        <i class="fas fa-times mr-2"></i>
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
 function openCreateModal() {
     document.getElementById('createModal').classList.remove('hidden');
@@ -634,10 +690,36 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// Funciones para el modal de imagen
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Cerrar modal de imagen al hacer clic fuera
+document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeImageModal();
+    }
+});
+
+// Cerrar modal de imagen con tecla ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeImageModal();
+    }
+});
+
 // Funciones para el modal de editar
 function openEditModal(organicId) {
     // Obtener datos del registro
-    fetch(`/admin/organic/${organicId}`, {
+    fetch(`/aprendiz/organic/${organicId}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
@@ -665,7 +747,7 @@ function openEditModal(organicId) {
             }
             
             // Configurar acción del formulario
-            document.getElementById('editForm').action = `/admin/organic/${organicId}`;
+            document.getElementById('editForm').action = `/aprendiz/organic/${organicId}`;
             
             // Mostrar modal
             document.getElementById('editModal').classList.remove('hidden');
@@ -696,36 +778,10 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Funciones para el modal de imagen
-function openImageModal(imageSrc) {
-    document.getElementById('modalImage').src = imageSrc;
-    document.getElementById('imageModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeImageModal() {
-    document.getElementById('imageModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-}
-
-// Cerrar modal de imagen al hacer clic fuera
-document.getElementById('imageModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeImageModal();
-    }
-});
-
-// Cerrar modal de imagen con tecla ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeImageModal();
-    }
-});
-
 // Funciones para el modal de vista
 function openViewModal(organicId) {
     // Obtener datos del registro
-    fetch(`/admin/organic/${organicId}`, {
+    fetch(`/aprendiz/organic/${organicId}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
@@ -752,7 +808,6 @@ function openViewModal(organicId) {
                 document.getElementById('viewImageContainer').style.display = 'none';
             }
             
-            
             // Mostrar modal
             document.getElementById('viewModal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -768,7 +823,6 @@ function closeViewModal() {
     document.body.style.overflow = 'auto';
 }
 
-
 // Cerrar modal de vista al hacer clic fuera
 document.getElementById('viewModal').addEventListener('click', function(e) {
     if (e.target === this) {
@@ -782,5 +836,63 @@ document.addEventListener('keydown', function(e) {
         closeViewModal();
     }
 });
+
+// Función para cerrar alertas de notificación
+function closeNotificationAlert(notificationId) {
+    const alert = document.getElementById('notification-alert-' + notificationId);
+    if (alert) {
+        alert.style.animation = 'slideOutRight 0.3s ease-in-out';
+        setTimeout(() => {
+            alert.remove();
+        }, 300);
+    }
+}
+
+// Funciones para manejar permisos
+function requestEditPermission(organicId) {
+    if (confirm('¿Desea solicitar permiso al administrador para editar este registro?')) {
+        // Aquí se implementaría la lógica para solicitar permiso
+        alert('Solicitud de edición enviada al administrador. Recibirá una notificación cuando sea aprobada.');
+    }
+}
+
+function requestDeletePermission(organicId) {
+    if (confirm('¿Desea solicitar permiso al administrador para eliminar este registro?')) {
+        // Aquí se implementaría la lógica para solicitar permiso
+        alert('Solicitud de eliminación enviada al administrador. Recibirá una notificación cuando sea aprobada.');
+    }
+}
+
+function showPermissionAlert() {
+    alert('No tiene permisos para realizar esta acción. Solo puede editar o eliminar sus propios registros.');
+}
 </script>
 @endsection
+
+<style>
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.animate-slide-in-right {
+    animation: slideInRight 0.3s ease-in-out;
+}
+</style>

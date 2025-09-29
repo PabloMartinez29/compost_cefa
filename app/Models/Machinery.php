@@ -40,7 +40,7 @@ class Machinery extends Model
     // Accessor para obtener el estado de la maquinaria basado en mantenimiento
     public function getStatusAttribute()
     {
-        $lastMaintenance = $this->maintenances()->maintenance()->latest('date')->first();
+        $lastMaintenance = $this->maintenances()->where('type', 'M')->latest('date')->first();
         
         if (!$lastMaintenance) {
             // Si no hay mantenimientos registrados, verificar tiempo desde inicio
