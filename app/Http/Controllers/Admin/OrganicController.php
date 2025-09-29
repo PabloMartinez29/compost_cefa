@@ -56,6 +56,9 @@ class OrganicController extends Controller
             $data['img'] = $request->file('img')->store('organics', 'public');
         }
 
+        // Agregar el ID del usuario que crea el registro
+        $data['created_by'] = auth()->id();
+
         $organic = Organic::create($data);
 
         // Crear movimiento automático en bodega de clasificación
@@ -77,6 +80,31 @@ class OrganicController extends Controller
      */
     public function show(Organic $organic)
     {
+        // Si es una petición AJAX, devolver JSON
+        if (request()->ajax()) {
+            // Cargar la relación del creador
+            $organic->load('creator');
+            
+            return response()->json([
+                'id' => $organic->id,
+                'date' => $organic->date->format('Y-m-d'),
+                'date_formatted' => $organic->formatted_date,
+                'type' => $organic->type,
+                'type_in_spanish' => $organic->type_in_spanish,
+                'weight' => $organic->weight,
+                'formatted_weight' => $organic->formatted_weight,
+                'delivered_by' => $organic->delivered_by,
+                'received_by' => $organic->received_by,
+                'notes' => $organic->notes,
+                'img' => $organic->img,
+                'img_url' => $organic->img ? Storage::url($organic->img) : null,
+                'created_at' => $organic->created_at->format('Y-m-d H:i:s'),
+                'created_at_formatted' => $organic->created_at->format('d/m/Y H:i:s'),
+                'created_by_info' => $organic->created_by_info,
+                'updated_at' => $organic->updated_at->format('Y-m-d H:i:s'),
+            ]);
+        }
+        
         return view('admin.organic.show', compact('organic'));
     }
 
@@ -116,7 +144,7 @@ class OrganicController extends Controller
 
         $organic->update($data);
 
-        return redirect()->route('admin.organic.index')->with('success', 'Organic waste record updated successfully!');
+        return redirect()->route('admin.organic.index')->with('success', '¡Registro de residuo orgánico actualizado exitosamente!');
     }
 
     /**
@@ -131,6 +159,6 @@ class OrganicController extends Controller
         
         $organic->delete();
 
-        return redirect()->route('admin.organic.index')->with('success', 'Organic waste record deleted successfully!');
+        return redirect()->route('admin.organic.index')->with('success', '¡Registro de residuo orgánico eliminado exitosamente!');
     }
 }

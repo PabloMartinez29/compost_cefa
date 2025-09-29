@@ -49,6 +49,9 @@ class OrganicController extends Controller
             $data['img'] = $request->file('img')->store('organics', 'public');
         }
 
+        // Agregar el ID del usuario que crea el registro
+        $data['created_by'] = auth()->id();
+
         $organic = Organic::create($data);
 
         // Crear movimiento automático en bodega de clasificación
