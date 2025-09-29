@@ -200,27 +200,54 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="flex space-x-2">
+                                <div class="flex space-x-2 items-center">
                                     <button onclick="openViewModal({{ $organic->id }})" 
-                                       class="text-blue-500 hover:text-blue-700" title="Ver Detalles">
+                                       class="inline-flex items-center text-blue-500 hover:text-blue-700" title="Ver Detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                     @if($organic->created_by == auth()->id())
-                                        <button onclick="openEditModal({{ $organic->id }})" 
-                                           class="text-green-500 hover:text-green-700" title="Editar">
+                                        <button onclick="confirmEdit({{ $organic->id }})" 
+                                           class="inline-flex items-center text-green-500 hover:text-green-700" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <form action="{{ route('aprendiz.organic.request-delete', $organic) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button type="submit" 
-                                               class="text-red-500 hover:text-red-700" title="Solicitar Eliminación"
-                                               onclick="return confirm('¿Desea solicitar permiso al administrador para eliminar este registro?')">
-                                                <i class="fas fa-trash"></i>
+
+                                        @php
+                                            $isApproved = isset($approvedOrganicIds) && in_array($organic->id, $approvedOrganicIds);
+                                            $isPending = isset($pendingOrganicIds) && in_array($organic->id, $pendingOrganicIds);
+                                            $isRejected = isset($rejectedOrganicIds) && in_array($organic->id, $rejectedOrganicIds);
+                                        @endphp
+
+                                        @if($isApproved)
+                                            <form id="delete-form-{{ $organic->id }}" action="{{ route('aprendiz.organic.destroy', $organic) }}" method="POST" class="inline-flex items-center">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" class="inline-flex items-center text-red-600 hover:text-red-800" title="Eliminar"
+                                                    onclick="confirmDelete('delete-form-{{ $organic->id }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @elseif($isPending)
+                                            <button type="button" class="inline-flex items-center text-yellow-500 cursor-default" title="Permiso pendiente de aprobación">
+                                                <i class="fas fa-hourglass-half"></i>
                                             </button>
-                                        </form>
+                                        @elseif($isRejected)
+                                            <button type="button" class="inline-flex items-center text-red-500 hover:text-red-700" title="Solicitud rechazada"
+                                                onclick="showRejectedAlert({{ $organic->id }})">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        @else
+                                            <form id="request-delete-form-{{ $organic->id }}" action="{{ route('aprendiz.organic.request-delete', $organic) }}" method="POST" class="inline-flex items-center">
+                                                @csrf
+                                                <button type="button" 
+                                                   class="inline-flex items-center text-red-500 hover:text-red-700" title="Solicitar Eliminación"
+                                                   onclick="confirmRequestPermission('request-delete-form-{{ $organic->id }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     @else
                                         <button onclick="showPermissionAlert()" 
-                                           class="text-gray-400 cursor-not-allowed" title="Sin permisos">
+                                           class="inline-flex items-center text-gray-400 cursor-not-allowed" title="Sin permisos">
                                             <i class="fas fa-lock"></i>
                                         </button>
                                     @endif
@@ -850,21 +877,112 @@ function closeNotificationAlert(notificationId) {
 
 // Funciones para manejar permisos
 function requestEditPermission(organicId) {
-    if (confirm('¿Desea solicitar permiso al administrador para editar este registro?')) {
-        // Aquí se implementaría la lógica para solicitar permiso
-        alert('Solicitud de edición enviada al administrador. Recibirá una notificación cuando sea aprobada.');
-    }
+    Swal.fire({
+        title: 'Solicitar permiso de edición',
+        text: '¿Desea solicitar permiso al administrador para editar este registro?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, solicitar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Solicitud enviada',
+                text: 'El administrador revisará su solicitud.',
+                icon: 'success'
+            });
+        }
+    });
 }
 
 function requestDeletePermission(organicId) {
-    if (confirm('¿Desea solicitar permiso al administrador para eliminar este registro?')) {
-        // Aquí se implementaría la lógica para solicitar permiso
-        alert('Solicitud de eliminación enviada al administrador. Recibirá una notificación cuando sea aprobada.');
-    }
+    Swal.fire({
+        title: 'Solicitar permiso de eliminación',
+        text: '¿Desea solicitar permiso al administrador para eliminar este registro?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, solicitar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Solicitud enviada',
+                text: 'El administrador revisará su solicitud.',
+                icon: 'success'
+            });
+        }
+    });
 }
 
 function showPermissionAlert() {
-    alert('No tiene permisos para realizar esta acción. Solo puede editar o eliminar sus propios registros.');
+    Swal.fire({
+        title: 'Sin permisos',
+        text: 'No tiene permisos para realizar esta acción. Solo puede editar o eliminar sus propios registros.',
+        icon: 'info'
+    });
+}
+
+function showRejectedAlert(organicId) {
+    Swal.fire({
+        title: 'Solicitud rechazada',
+        text: 'Esta solicitud de eliminación ha sido rechazada por el administrador. No puede eliminar este registro.',
+        icon: 'error'
+    });
+}
+
+function confirmEdit(organicId) {
+    Swal.fire({
+        title: 'Confirmar edición',
+        text: '¿Está seguro de que desea editar este registro?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, editar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            openEditModal(organicId);
+        }
+    });
+}
+
+function confirmDelete(formId) {
+    Swal.fire({
+        title: '¿Eliminar registro?',
+        text: 'Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById(formId).submit();
+        }
+    });
+}
+
+function confirmRequestPermission(formId) {
+    Swal.fire({
+        title: 'Solicitar permiso',
+        text: '¿Desea solicitar permiso al administrador para eliminar este registro?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, solicitar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById(formId).submit();
+        }
+    });
 }
 </script>
 @endsection
