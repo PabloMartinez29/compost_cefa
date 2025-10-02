@@ -3,6 +3,9 @@
 @section('content')
 @vite(['resources/css/waste.css'])
 
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container mx-auto px-6 py-8">
     <!-- Header -->
     <div class="waste-header animate-fade-in-up">
@@ -118,15 +121,12 @@
                             <td>{{ $organic->formatted_date }}</td>
                             <td>
                                 @if($organic->img)
-                                    @php
-                                        $imageUrl = route('storage.local', ['path' => $organic->img]);
-                                    @endphp
-                                    <!-- Debug: {{ $imageUrl }} -->
-                                    <img src="{{ $imageUrl }}?v={{ $organic->updated_at->timestamp }}" 
+                                    <!-- Debug: {{ Storage::url($organic->img) }} -->
+                                    <img src="{{ Storage::url($organic->img) }}?v={{ $organic->updated_at->timestamp }}" 
                                          alt="Imagen del residuo" 
                                          class="w-12 h-12 object-cover rounded-full cursor-pointer hover:opacity-80 transition-opacity"
-                                         onclick="openImageModal('{{ $imageUrl }}?v={{ $organic->updated_at->timestamp }}')"
-                                         onerror="console.log('Error loading image:', this.src); this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                         onclick="openImageModal('{{ Storage::url($organic->img) }}?v={{ $organic->updated_at->timestamp }}')"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                     <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center" style="display: none;">
                                         <i class="fas fa-image text-gray-400"></i>
                                     </div>
@@ -161,10 +161,10 @@
                                     </button>
                                     <form action="{{ route('admin.organic.destroy', $organic) }}" 
                                           method="POST" class="inline" 
-                                          onsubmit="return confirm('Are you sure you want to delete this record?')">
+                                          onsubmit="return confirmDelete(event, this)">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Delete">
+                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
@@ -308,12 +308,12 @@
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-image text-green-500 mr-2"></i>
-                            Imagen (Requerido)
+                            Imagen (Opcional)
                         </label>
                         <div class="relative">
                             <input type="file" name="img" id="imageInput" 
                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 @error('img') border-red-500 @enderror" 
-                                   accept="image/*" onchange="previewImage(this)" required>
+                                   accept="image/*" onchange="previewImage(this)">
                             <div id="imagePreview" class="mt-3 hidden">
                                 <img id="previewImg" class="w-32 h-32 object-cover rounded-lg border border-gray-200" alt="Preview">
                             </div>
@@ -782,5 +782,65 @@ document.addEventListener('keydown', function(e) {
         closeViewModal();
     }
 });
+
+// Función para confirmar eliminación con SweetAlert2
+function confirmDelete(event, form) {
+    event.preventDefault();
+    
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¿Quieres eliminar este registro de residuo orgánico?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true,
+        customClass: {
+            popup: 'rounded-lg',
+            title: 'text-lg font-semibold',
+            content: 'text-sm text-gray-600',
+            confirmButton: 'px-4 py-2 rounded-lg font-medium',
+            cancelButton: 'px-4 py-2 rounded-lg font-medium'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Eliminando...',
+                text: 'Por favor espera',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Enviar formulario
+            form.submit();
+        }
+    });
+    
+    return false;
+}
+
+// Mostrar mensaje de éxito si existe
+@if(session('success'))
+    Swal.fire({
+        title: '¡Éxito!',
+        text: '{{ session('success') }}',
+        icon: 'success',
+        confirmButtonColor: '#22c55e',
+        confirmButtonText: 'Entendido',
+        customClass: {
+            popup: 'rounded-lg',
+            title: 'text-lg font-semibold text-green-600',
+            content: 'text-sm text-gray-600',
+            confirmButton: 'px-4 py-2 rounded-lg font-medium'
+        }
+    });
+@endif
 </script>
 @endsection

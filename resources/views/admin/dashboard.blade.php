@@ -68,16 +68,11 @@
             <div class="flex items-center justify-between">
                 <div>
                     <div class="stats-label">Maquinaria</div>
-                    <div class="stats-number">{{ $machineryStats['total'] ?? 0 }}</div>
+                    <div class="stats-number">0</div>
                 </div>
                 <div class="stats-icon text-orange-300">
                     <i class="fas fa-cogs"></i>
                 </div>
-            </div>
-            <div class="mt-4 text-xs text-orange-200">
-                <a href="{{ route('machinery.index') }}" class="hover:text-white transition-colors">
-                    Ver todas →
-                </a>
             </div>
         </div>
 

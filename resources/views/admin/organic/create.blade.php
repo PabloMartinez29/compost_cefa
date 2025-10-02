@@ -154,7 +154,7 @@
                         <div class="space-y-2">
                             <label class="flex items-center text-sm font-semibold text-soft-gray-700">
                                 <i class="fas fa-image text-soft-green-500 mr-2"></i>
-                                Imagen (Requerido)
+                                Imagen (Opcional)
                             </label>
                             <div class="relative">
                                 <input type="file" name="img" id="imageInput" 

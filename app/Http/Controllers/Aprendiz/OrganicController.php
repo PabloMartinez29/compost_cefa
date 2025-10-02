@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Aprendiz;
 use App\Http\Controllers\Controller;
 use App\Models\Organic;
 use App\Models\WarehouseClassification;
-use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,27 +15,8 @@ class OrganicController extends Controller
      */
     public function index()
     {
-        $organics = Organic::orderBy('created_at', 'desc')->paginate(10);
-        
-        // Calcular estadísticas
-        $totalWeight = Organic::sum('weight');
-        $totalRecords = Organic::count();
-        $todayRecords = Organic::whereDate('created_at', today())->count();
-        $todayWeight = Organic::whereDate('created_at', today())->sum('weight');
-
-        // Verificar notificaciones recientes
-        $recentNotifications = Notification::where('user_id', auth()->id())
-            ->whereIn('status', ['approved', 'rejected'])
-            ->whereNull('read_at')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        // Marcar las notificaciones como leídas cuando se muestran
-        foreach($recentNotifications as $notification) {
-            $notification->update(['read_at' => now()]);
-        }
-        
-        return view('aprendiz.organic.index', compact('organics', 'totalWeight', 'totalRecords', 'todayRecords', 'todayWeight', 'recentNotifications'));
+        $organics = Organic::orderBy('created_at', 'desc')->get();
+        return view('aprendiz.organic.index', compact('organics'));
     }
 
     /**
@@ -59,19 +39,7 @@ class OrganicController extends Controller
             'delivered_by' => 'required|string|max:100',
             'received_by' => 'required|string|max:100',
             'notes' => 'nullable|string',
-            'img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ], [
-            'date.required' => 'La fecha es obligatoria.',
-            'type.required' => 'El tipo de residuo es obligatorio.',
-            'weight.required' => 'El peso es obligatorio.',
-            'weight.numeric' => 'El peso debe ser un número válido.',
-            'weight.min' => 'El peso debe ser mayor a 0.',
-            'delivered_by.required' => 'El campo entregado por es obligatorio.',
-            'received_by.required' => 'El campo recibido por es obligatorio.',
-            'img.required' => 'La imagen es obligatoria.',
-            'img.image' => 'El archivo debe ser una imagen válida.',
-            'img.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
-            'img.max' => 'La imagen no debe ser mayor a 2MB.'
+            'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         $data = $request->all();
@@ -105,27 +73,6 @@ class OrganicController extends Controller
      */
     public function show(Organic $organic)
     {
-        // Si es una petición AJAX, devolver JSON
-        if (request()->ajax()) {
-            return response()->json([
-                'id' => $organic->id,
-                'date' => $organic->date,
-                'date_formatted' => $organic->formatted_date,
-                'type' => $organic->type,
-                'type_in_spanish' => $organic->type_in_spanish,
-                'weight' => $organic->weight,
-                'formatted_weight' => $organic->formatted_weight,
-                'delivered_by' => $organic->delivered_by,
-                'received_by' => $organic->received_by,
-                'notes' => $organic->notes,
-                'img' => $organic->img,
-                'img_url' => $organic->img ? route('storage.local', ['path' => $organic->img]) : null,
-                'created_at' => $organic->created_at,
-                'created_at_formatted' => $organic->created_at_formatted,
-                'created_by_info' => $organic->created_by_info,
-            ]);
-        }
-        
         return view('aprendiz.organic.show', compact('organic'));
     }
 
@@ -134,12 +81,6 @@ class OrganicController extends Controller
      */
     public function edit(Organic $organic)
     {
-        // Verificar permisos - solo puede editar sus propios registros
-        if ($organic->created_by !== auth()->id()) {
-            return redirect()->route('aprendiz.organic.index')
-                ->with('permission_required', 'No tiene permisos para editar este registro. Solo puede editar sus propios registros.');
-        }
-
         return view('aprendiz.organic.edit', compact('organic'));
     }
 
@@ -148,12 +89,6 @@ class OrganicController extends Controller
      */
     public function update(Request $request, Organic $organic)
     {
-        // Verificar permisos - solo puede editar sus propios registros
-        if ($organic->created_by !== auth()->id()) {
-            return redirect()->route('aprendiz.organic.index')
-                ->with('permission_required', 'No tiene permisos para editar este registro. Solo puede editar sus propios registros.');
-        }
-
         $request->validate([
             'date' => 'required|date',
             'type' => 'required|in:Kitchen,Beds,Leaves,CowDung,ChickenManure,PigManure,Other',
@@ -162,17 +97,6 @@ class OrganicController extends Controller
             'received_by' => 'required|string|max:100',
             'notes' => 'nullable|string',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
-        ], [
-            'date.required' => 'La fecha es obligatoria.',
-            'type.required' => 'El tipo de residuo es obligatorio.',
-            'weight.required' => 'El peso es obligatorio.',
-            'weight.numeric' => 'El peso debe ser un número válido.',
-            'weight.min' => 'El peso debe ser mayor a 0.',
-            'delivered_by.required' => 'El campo entregado por es obligatorio.',
-            'received_by.required' => 'El campo recibido por es obligatorio.',
-            'img.image' => 'El archivo debe ser una imagen válida.',
-            'img.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
-            'img.max' => 'La imagen no debe ser mayor a 2MB.'
         ]);
 
         $data = $request->all();
@@ -196,24 +120,6 @@ class OrganicController extends Controller
      */
     public function destroy(Organic $organic)
     {
-        // Verificar permisos - solo puede eliminar sus propios registros
-        if ($organic->created_by !== auth()->id()) {
-            return redirect()->route('aprendiz.organic.index')
-                ->with('permission_required', 'No tiene permisos para eliminar este registro. Solo puede eliminar sus propios registros.');
-        }
-
-        // Verificar si tiene permiso aprobado del administrador
-        $approvedNotification = Notification::where('from_user_id', auth()->id())
-            ->where('organic_id', $organic->id)
-            ->where('type', 'delete_request')
-            ->where('status', 'approved')
-            ->first();
-
-        if (!$approvedNotification) {
-            return redirect()->route('aprendiz.organic.index')
-                ->with('permission_required', 'No tiene permiso del administrador para eliminar este registro. Debe solicitar permiso primero.');
-        }
-
         // Delete image if exists
         if ($organic->img) {
             Storage::disk('public')->delete($organic->img);
@@ -221,56 +127,6 @@ class OrganicController extends Controller
 
         $organic->delete();
 
-        // Marcar la notificación como procesada
-        $approvedNotification->update(['status' => 'processed']);
-
         return redirect()->route('aprendiz.organic.index')->with('success', 'Residuo orgánico eliminado exitosamente!');
-    }
-
-    /**
-     * Solicitar permiso para editar un registro
-     */
-    public function requestEditPermission(Organic $organic)
-    {
-        // Verificar que el registro pertenece al usuario
-        if ($organic->created_by !== auth()->id()) {
-            return redirect()->route('aprendiz.organic.index')
-                ->with('permission_required', 'No puede solicitar permisos para registros que no le pertenecen.');
-        }
-
-        // Aquí se implementaría la lógica para enviar notificación al administrador
-        // Por ahora, solo mostramos un mensaje
-        return redirect()->route('aprendiz.organic.index')
-            ->with('success', 'Solicitud de edición enviada al administrador. Recibirá una notificación cuando sea aprobada.');
-    }
-
-    /**
-     * Solicitar permiso para eliminar un registro
-     */
-    public function requestDeletePermission(Organic $organic)
-    {
-        // Verificar que el registro pertenece al usuario
-        if ($organic->created_by !== auth()->id()) {
-            return redirect()->route('aprendiz.organic.index')
-                ->with('permission_required', 'No puede solicitar permisos para registros que no le pertenecen.');
-        }
-
-        // Buscar el administrador
-        $admin = \App\Models\User::where('role', 'admin')->first();
-        
-        if ($admin) {
-            // Crear notificación para el administrador
-            Notification::create([
-                'user_id' => $admin->id,
-                'from_user_id' => auth()->id(),
-                'organic_id' => $organic->id,
-                'type' => 'delete_request',
-                'status' => 'pending',
-                'message' => auth()->user()->name . ' solicita permiso para eliminar el registro #' . str_pad($organic->id, 3, '0', STR_PAD_LEFT)
-            ]);
-        }
-
-        return redirect()->route('aprendiz.organic.index')
-            ->with('success', 'Solicitud de eliminación enviada al administrador. Recibirá una notificación cuando sea aprobada.');
     }
 }
