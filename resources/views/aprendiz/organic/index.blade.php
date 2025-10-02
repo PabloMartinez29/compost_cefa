@@ -202,12 +202,12 @@
                             <td>
                                 <div class="flex space-x-2 items-center">
                                     <button onclick="openViewModal({{ $organic->id }})" 
-                                       class="inline-flex items-center text-blue-500 hover:text-blue-700" title="Ver Detalles">
+                                       class="inline-flex items-center justify-center w-8 h-8 text-blue-500 hover:text-blue-700" title="Ver Detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                     @if($organic->created_by == auth()->id())
                                         <button onclick="confirmEdit({{ $organic->id }})" 
-                                           class="inline-flex items-center text-green-500 hover:text-green-700" title="Editar">
+                                           class="inline-flex items-center justify-center w-8 h-8 text-green-500 hover:text-green-700" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
 
@@ -218,28 +218,28 @@
                                         @endphp
 
                                         @if($isApproved)
-                                            <form id="delete-form-{{ $organic->id }}" action="{{ route('aprendiz.organic.destroy', $organic) }}" method="POST" class="inline-flex items-center">
+                                            <form id="delete-form-{{ $organic->id }}" action="{{ route('aprendiz.organic.destroy', $organic) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="inline-flex items-center text-red-600 hover:text-red-800" title="Eliminar"
+                                                <button type="button" class="inline-flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-800" title="Eliminar"
                                                     onclick="confirmDelete('delete-form-{{ $organic->id }}')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
                                         @elseif($isPending)
-                                            <button type="button" class="inline-flex items-center text-yellow-500 cursor-default" title="Permiso pendiente de aprobación">
+                                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 text-yellow-500 cursor-default" title="Permiso pendiente de aprobación">
                                                 <i class="fas fa-hourglass-half"></i>
                                             </button>
                                         @elseif($isRejected)
-                                            <button type="button" class="inline-flex items-center text-red-500 hover:text-red-700" title="Solicitud rechazada"
+                                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 text-red-500 hover:text-red-700" title="Solicitud rechazada"
                                                 onclick="showRejectedAlert({{ $organic->id }})">
                                                 <i class="fas fa-ban"></i>
                                             </button>
                                         @else
-                                            <form id="request-delete-form-{{ $organic->id }}" action="{{ route('aprendiz.organic.request-delete', $organic) }}" method="POST" class="inline-flex items-center">
+                                            <form id="request-delete-form-{{ $organic->id }}" action="{{ route('aprendiz.organic.request-delete', $organic) }}" method="POST" class="inline">
                                                 @csrf
                                                 <button type="button" 
-                                                   class="inline-flex items-center text-red-500 hover:text-red-700" title="Solicitar Eliminación"
+                                                   class="inline-flex items-center justify-center w-8 h-8 text-red-500 hover:text-red-700" title="Solicitar Eliminación"
                                                    onclick="confirmRequestPermission('request-delete-form-{{ $organic->id }}')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -247,7 +247,7 @@
                                         @endif
                                     @else
                                         <button onclick="showPermissionAlert()" 
-                                           class="inline-flex items-center text-gray-400 cursor-not-allowed" title="Sin permisos">
+                                           class="inline-flex items-center justify-center w-8 h-8 text-gray-400 cursor-not-allowed" title="Sin permisos">
                                             <i class="fas fa-lock"></i>
                                         </button>
                                     @endif

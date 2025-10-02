@@ -28,11 +28,11 @@
         <div class="stats-card stats-card-primary animate-fade-in-up animate-delay-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <div class="stats-label">Total Pasantes</div>
-                    <div class="stats-number">0</div>
+                    <div class="stats-label">Total Aprendices</div>
+                    <div class="stats-number">{{ $userStats['total_apprentices'] }}</div>
                 </div>
                 <div class="stats-icon text-blue-300">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-user-graduate"></i>
                 </div>
             </div>
         </div>
@@ -55,7 +55,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <div class="stats-label">Residuos (Kg)</div>
-                    <div class="stats-number">0</div>
+                    <div class="stats-number">{{ number_format($organicStats['total_weight'], 1) }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ $organicStats['total_records'] }} registros</div>
                 </div>
                 <div class="stats-icon text-cyan-300">
                     <i class="fas fa-leaf"></i>
@@ -68,7 +69,8 @@
             <div class="flex items-center justify-between">
                 <div>
                     <div class="stats-label">Maquinaria</div>
-                    <div class="stats-number">0</div>
+                    <div class="stats-number">{{ $machineryStats['total'] }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ $machineryStats['operational'] }} operativas</div>
                 </div>
                 <div class="stats-icon text-orange-300">
                     <i class="fas fa-cogs"></i>
@@ -162,10 +164,10 @@
                     <i class="fas fa-plus mr-2"></i>
                     Crear Nueva Pila
                 </a>
-                        <button onclick="openCreateModal()" class="action-btn-info">
-            <i class="fas fa-leaf mr-2"></i>
-            Entrada de Residuos
-        </button>
+                <a href="{{ route('admin.organic.create') }}" class="action-btn-info">
+                    <i class="fas fa-leaf mr-2"></i>
+                    Entrada de Residuos
+                </a>
                 <a href="#" class="action-btn-orange">
                     <i class="fas fa-cogs mr-2"></i>
                     Gestionar Maquinaria

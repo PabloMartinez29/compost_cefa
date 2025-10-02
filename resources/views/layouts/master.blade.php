@@ -227,6 +227,82 @@
                 
                 <!-- User Menu -->
                 <div class="flex items-center space-x-4">
+                    <!-- Notifications Bell -->
+                    <div class="relative">
+                        <button onclick="toggleNotifications()" 
+                            class="relative p-2 text-soft-gray-600 hover:text-soft-green-600 hover:bg-soft-gray-100 rounded-lg transition-all duration-200">
+                            <i class="fas fa-bell text-lg"></i>
+                            <!-- Notification Badge -->
+                            @php
+                                $pendingNotifications = \App\Models\Notification::where('user_id', auth()->id())
+                                    ->where('type', 'delete_request')
+                                    ->where('status', 'pending')
+                                    ->count();
+                            @endphp
+                            @if($pendingNotifications > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                    {{ $pendingNotifications > 9 ? '9+' : $pendingNotifications }}
+                                </span>
+                            @endif
+                        </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div id="notificationsMenu" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-soft-gray-200 py-2 z-50 max-h-96 overflow-y-auto">
+                            <div class="px-4 py-2 border-b border-soft-gray-100 flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-soft-gray-800">Solicitudes de Permisos</h3>
+                                <a href="{{ route('admin.notifications.history') }}" 
+                                   class="text-xs text-soft-green-600 hover:text-soft-green-700 font-medium">
+                                    Ver historial
+                                </a>
+                            </div>
+                            
+                            @php
+                                $notifications = \App\Models\Notification::where('user_id', auth()->id())
+                                    ->where('type', 'delete_request')
+                                    ->where('status', 'pending')
+                                    ->with(['fromUser', 'organic'])
+                                    ->orderBy('created_at', 'desc')
+                                    ->get();
+                            @endphp
+                            
+                            @forelse($notifications as $notification)
+                                <div class="px-4 py-3 hover:bg-soft-gray-50 border-b border-soft-gray-100 last:border-b-0">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-trash text-yellow-600 text-sm"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-soft-gray-800">
+                                                {{ $notification->fromUser->name }}
+                                            </p>
+                                            <p class="text-xs text-soft-gray-600 mt-1">
+                                                Solicita eliminar registro #{{ str_pad($notification->organic_id, 3, '0', STR_PAD_LEFT) }}
+                                            </p>
+                                            <p class="text-xs text-soft-gray-500 mt-1">
+                                                {{ $notification->created_at->diffForHumans() }}
+                                            </p>
+                                            <div class="flex space-x-2 mt-2">
+                                                <button onclick="approveDeleteRequest({{ $notification->id }})" 
+                                                    class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors">
+                                                    Aprobar
+                                                </button>
+                                                <button onclick="rejectDeleteRequest({{ $notification->id }})" 
+                                                    class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors">
+                                                    Rechazar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="px-4 py-6 text-center">
+                                    <i class="fas fa-bell-slash text-soft-gray-400 text-2xl mb-2"></i>
+                                    <p class="text-sm text-soft-gray-500">No hay solicitudes pendientes</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                    
                     <div class="relative">
                         <button onclick="toggleSubmenu('userMenu', 'userArrow')" 
                             class="flex items-center space-x-3 hover:bg-soft-gray-100 rounded-lg px-3 py-2 transition-all duration-200">
@@ -323,6 +399,91 @@
                 arrow.classList.toggle('rotate-180');
             }
         }
+
+        // Notifications functions
+        function toggleNotifications() {
+            const menu = document.getElementById('notificationsMenu');
+            const userMenu = document.getElementById('userMenu');
+            
+            // Close user menu if open
+            if (!userMenu.classList.contains('hidden')) {
+                userMenu.classList.add('hidden');
+            }
+            
+            menu.classList.toggle('hidden');
+        }
+
+        function approveDeleteRequest(notificationId) {
+            fetch(`/admin/notifications/${notificationId}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Aprobado!',
+                        text: 'Solicitud de eliminación aprobada exitosamente',
+                        icon: 'success',
+                        confirmButtonColor: '#22c55e'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al procesar la solicitud',
+                    icon: 'error'
+                });
+            });
+        }
+
+        function rejectDeleteRequest(notificationId) {
+            fetch(`/admin/notifications/${notificationId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Rechazado',
+                        text: 'Solicitud de eliminación rechazada',
+                        icon: 'info',
+                        confirmButtonColor: '#6b7280'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al procesar la solicitud',
+                    icon: 'error'
+                });
+            });
+        }
+
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(event) {
+            const notificationsMenu = document.getElementById('notificationsMenu');
+            const notificationButton = event.target.closest('[onclick="toggleNotifications()"]');
+            
+            if (!notificationButton && !notificationsMenu.contains(event.target)) {
+                notificationsMenu.classList.add('hidden');
+            }
+        });
 
 
 

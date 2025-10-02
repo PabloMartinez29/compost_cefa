@@ -48,6 +48,11 @@ Route::middleware(['auth','role:admin'])->group(function(){
     // Warehouse Classification Routes
     Route::get('admin/warehouse', [WarehouseController::class, 'index'])->name('admin.warehouse.index');
     Route::get('admin/warehouse/inventory/{type}', [WarehouseController::class, 'inventory'])->name('admin.warehouse.inventory');
+    
+    // Notification Routes
+    Route::get('admin/notifications/history', [AdminController::class, 'notificationsHistory'])->name('admin.notifications.history');
+    Route::post('admin/notifications/{notification}/approve', [AdminController::class, 'approveNotification'])->name('admin.notifications.approve');
+    Route::post('admin/notifications/{notification}/reject', [AdminController::class, 'rejectNotification'])->name('admin.notifications.reject');
 });
 
 
@@ -65,6 +70,14 @@ Route::middleware(['auth', 'role:aprendiz'])->group(function(){
         'update' => 'aprendiz.organic.update',
         'destroy' => 'aprendiz.organic.destroy',
     ]);
+    
+    // Additional routes for apprentice permissions
+    Route::post('aprendiz/organic/{organic}/request-delete', [AprendizOrganicController::class, 'requestDeletePermission'])->name('aprendiz.organic.request-delete');
+    Route::post('aprendiz/organic/{organic}/request-edit', [AprendizOrganicController::class, 'requestEditPermission'])->name('aprendiz.organic.request-edit');
+    
+    // Notification routes for apprentice
+    Route::get('aprendiz/notifications/history', [AprendizController::class, 'notificationsHistory'])->name('aprendiz.notifications.history');
+    Route::post('aprendiz/notifications/{notification}/mark-read', [AprendizController::class, 'markNotificationAsRead'])->name('aprendiz.notifications.mark-read');
 
     // Warehouse Classification Routes for Apprentices
     Route::get('aprendiz/warehouse', [AprendizWarehouseController::class, 'index'])->name('aprendiz.warehouse.index');

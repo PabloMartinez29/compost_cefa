@@ -164,7 +164,7 @@
                                           onsubmit="return confirmDelete(event, this)">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                        <button type="submit" class="inline-flex items-center text-red-500 hover:text-red-700" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Aprendiz;
 use App\Http\Controllers\Controller;
 use App\Models\Organic;
 use App\Models\WarehouseClassification;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,7 +25,8 @@ class OrganicController extends Controller
         $todayWeight = Organic::whereDate('created_at', today())->sum('weight');
 
         // Verificar notificaciones recientes
-        $recentNotifications = Notification::where('user_id', auth()->id())
+        $userId = auth()->check() ? auth()->id() : null;
+        $recentNotifications = Notification::where('user_id', $userId)
             ->whereIn('status', ['approved', 'rejected'])
             ->whereNull('read_at')
             ->orderBy('created_at', 'desc')
@@ -36,21 +38,21 @@ class OrganicController extends Controller
         }
 
         // IDs de orgánicos con aprobación vigente para eliminar
-        $approvedOrganicIds = Notification::where('from_user_id', auth()->id())
+        $approvedOrganicIds = Notification::where('from_user_id', $userId)
             ->where('type', 'delete_request')
             ->where('status', 'approved')
             ->pluck('organic_id')
             ->toArray();
 
         // IDs de orgánicos con solicitud pendiente
-        $pendingOrganicIds = Notification::where('from_user_id', auth()->id())
+        $pendingOrganicIds = Notification::where('from_user_id', $userId)
             ->where('type', 'delete_request')
             ->where('status', 'pending')
             ->pluck('organic_id')
             ->toArray();
 
         // IDs de orgánicos con solicitud rechazada
-        $rejectedOrganicIds = Notification::where('from_user_id', auth()->id())
+        $rejectedOrganicIds = Notification::where('from_user_id', $userId)
             ->where('type', 'delete_request')
             ->where('status', 'rejected')
             ->pluck('organic_id')
@@ -100,7 +102,7 @@ class OrganicController extends Controller
         }
 
         // Agregar el ID del usuario que crea el registro
-        $data['created_by'] = auth()->id();
+        $data['created_by'] = auth()->check() ? auth()->id() : null;
 
         $organic = Organic::create($data);
 
@@ -186,7 +188,8 @@ class OrganicController extends Controller
     public function requestEditPermission(Organic $organic)
     {
         // Verificar que el registro pertenece al usuario
-        if ($organic->created_by !== auth()->id()) {
+        $currentUserId = auth()->check() ? auth()->id() : null;
+        if ($organic->created_by !== $currentUserId) {
             return redirect()->route('aprendiz.organic.index')
                 ->with('permission_required', 'No puede solicitar permisos para registros que no le pertenecen.');
         }
@@ -203,13 +206,15 @@ class OrganicController extends Controller
     public function requestDeletePermission(Organic $organic)
     {
         // Verificar que el registro pertenece al usuario
-        if ($organic->created_by !== auth()->id()) {
+        $currentUserId = auth()->check() ? auth()->id() : null;
+        if ($organic->created_by !== $currentUserId) {
             return redirect()->route('aprendiz.organic.index')
                 ->with('permission_required', 'No puede solicitar permisos para registros que no le pertenecen.');
         }
 
         // Evitar solicitudes duplicadas si ya hay una pendiente o aprobada
-        $existing = Notification::where('from_user_id', auth()->id())
+        $currentUserId = auth()->check() ? auth()->id() : null;
+        $existing = Notification::where('from_user_id', $currentUserId)
             ->where('organic_id', $organic->id)
             ->where('type', 'delete_request')
             ->whereIn('status', ['pending', 'approved'])
@@ -225,6 +230,17 @@ class OrganicController extends Controller
                 ->with('success', 'Su solicitud ya fue aprobada. Ahora puede eliminar el registro.');
         }
 
+        // Si hay una solicitud rechazada, eliminarla para permitir nueva solicitud
+        $rejected = Notification::where('from_user_id', $currentUserId)
+            ->where('organic_id', $organic->id)
+            ->where('type', 'delete_request')
+            ->where('status', 'rejected')
+            ->first();
+        
+        if ($rejected) {
+            $rejected->delete();
+        }
+
         // Buscar el administrador
         $admin = \App\Models\User::where('role', 'admin')->first();
         
@@ -232,11 +248,11 @@ class OrganicController extends Controller
             // Crear notificación para el administrador
             Notification::create([
                 'user_id' => $admin->id,
-                'from_user_id' => auth()->id(),
+                'from_user_id' => $currentUserId,
                 'organic_id' => $organic->id,
                 'type' => 'delete_request',
                 'status' => 'pending',
-                'message' => auth()->user()->name . ' solicita permiso para eliminar el registro #' . str_pad($organic->id, 3, '0', STR_PAD_LEFT)
+                'message' => (auth()->check() ? auth()->user()->name : 'Usuario') . ' solicita permiso para eliminar el registro #' . str_pad($organic->id, 3, '0', STR_PAD_LEFT)
             ]);
         }
 

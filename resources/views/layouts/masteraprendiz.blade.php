@@ -172,6 +172,94 @@
                 
                 <!-- User Menu -->
                 <div class="flex items-center space-x-4">
+                    <!-- Notifications Bell -->
+                    <div class="relative" x-data="{ notificationsOpen: false }">
+                        <button @click="notificationsOpen = !notificationsOpen" 
+                            class="relative p-2 text-soft-gray-600 hover:text-soft-green-600 hover:bg-soft-gray-100 rounded-lg transition-all duration-200">
+                            <i class="fas fa-bell text-lg"></i>
+                            <!-- Notification Badge -->
+                            @php
+                                $pendingNotifications = \App\Models\Notification::where('from_user_id', auth()->id())
+                                    ->where('type', 'delete_request')
+                                    ->whereIn('status', ['approved', 'rejected'])
+                                    ->whereNull('read_at')
+                                    ->count();
+                            @endphp
+                            @if($pendingNotifications > 0)
+                                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                    {{ $pendingNotifications > 9 ? '9+' : $pendingNotifications }}
+                                </span>
+                            @endif
+                        </button>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div x-show="notificationsOpen" 
+                             @click.away="notificationsOpen = false"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-soft-gray-200 py-2 z-50 max-h-96 overflow-y-auto">
+                            <div class="px-4 py-2 border-b border-soft-gray-100 flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-soft-gray-800">Respuestas a Solicitudes</h3>
+                                <a href="{{ route('aprendiz.notifications.history') }}" 
+                                   class="text-xs text-soft-green-600 hover:text-soft-green-700 font-medium">
+                                    Ver historial
+                                </a>
+                            </div>
+                            
+                            @php
+                                $notifications = \App\Models\Notification::where('from_user_id', auth()->id())
+                                    ->where('type', 'delete_request')
+                                    ->whereIn('status', ['approved', 'rejected'])
+                                    ->whereNull('read_at')
+                                    ->with(['organic'])
+                                    ->orderBy('created_at', 'desc')
+                                    ->get();
+                            @endphp
+                            
+                            @forelse($notifications as $notification)
+                                <div class="px-4 py-3 hover:bg-soft-gray-50 border-b border-soft-gray-100 last:border-b-0">
+                                    <div class="flex items-start space-x-3">
+                                        <div class="w-8 h-8 {{ $notification->status === 'approved' ? 'bg-green-100' : 'bg-red-100' }} rounded-full flex items-center justify-center flex-shrink-0">
+                                            <i class="fas {{ $notification->status === 'approved' ? 'fa-check text-green-600' : 'fa-times text-red-600' }} text-sm"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-soft-gray-800">
+                                                Solicitud {{ $notification->status === 'approved' ? 'Aprobada' : 'Rechazada' }}
+                                            </p>
+                                            <p class="text-xs text-soft-gray-600 mt-1">
+                                                Registro #{{ str_pad($notification->organic_id, 3, '0', STR_PAD_LEFT) }}
+                                            </p>
+                                            <p class="text-xs text-soft-gray-500 mt-1">
+                                                {{ $notification->updated_at->diffForHumans() }}
+                                            </p>
+                                            <div class="flex space-x-2 mt-2">
+                                                <button onclick="markAsRead({{ $notification->id }})" 
+                                                    class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors">
+                                                    Marcar como leída
+                                                </button>
+                                                @if($notification->status === 'approved')
+                                                    <a href="{{ route('aprendiz.organic.index') }}" 
+                                                       class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors">
+                                                        Ver registros
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="px-4 py-6 text-center">
+                                    <i class="fas fa-bell-slash text-soft-gray-400 text-2xl mb-2"></i>
+                                    <p class="text-sm text-soft-gray-500">No hay notificaciones nuevas</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                    
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" class="flex items-center space-x-3 hover:bg-soft-gray-100 rounded-lg px-3 py-2 transition-all duration-200">
                             <div class="w-8 h-8 bg-gradient-to-br from-soft-green-400 to-soft-green-500 rounded-full flex items-center justify-center">
@@ -235,5 +323,40 @@
             </main>
         </div>
     </div>
+
+    <script>
+        function markAsRead(notificationId) {
+            fetch(`/aprendiz/notifications/${notificationId}/mark-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Marcado como leído',
+                        text: 'La notificación ha sido marcada como leída',
+                        icon: 'success',
+                        confirmButtonColor: '#22c55e',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ocurrió un error al marcar la notificación',
+                    icon: 'error'
+                });
+            });
+        }
+    </script>
 </body>
 </html>
