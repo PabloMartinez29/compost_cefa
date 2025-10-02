@@ -150,13 +150,13 @@
                             <td>{{ $organic->delivered_by }}</td>
                             <td>{{ $organic->received_by }}</td>
                             <td>
-                                <div class="flex space-x-2">
+                                <div class="flex space-x-2 items-center">
                                     <button onclick="openViewModal({{ $organic->id }})" 
-                                       class="text-blue-500 hover:text-blue-700" title="Ver Detalles">
+                                       class="inline-flex items-center text-blue-500 hover:text-blue-700" title="Ver Detalles">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button onclick="openEditModal({{ $organic->id }})" 
-                                       class="text-green-500 hover:text-green-700" title="Editar">
+                                    <button onclick="confirmEdit({{ $organic->id }})" 
+                                       class="inline-flex items-center text-green-500 hover:text-green-700" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <form action="{{ route('admin.organic.destroy', $organic) }}" 
@@ -633,6 +633,41 @@ document.addEventListener('keydown', function(e) {
         closeCreateModal();
     }
 });
+
+function confirmDelete(formId) {
+    Swal.fire({
+        title: '¿Eliminar registro?',
+        text: 'Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById(formId).submit();
+        }
+    });
+}
+
+// Confirmación antes de editar
+function confirmEdit(organicId) {
+    Swal.fire({
+        title: 'Confirmar edición',
+        text: '¿Está seguro de que desea editar este registro?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#16a34a',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Sí, editar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            openEditModal(organicId);
+        }
+    });
+}
 
 // Funciones para el modal de editar
 function openEditModal(organicId) {
